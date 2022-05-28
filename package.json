@@ -1,0 +1,99 @@
+{
+  "name": "el-vue",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "main": "background.js",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.1.1",
+    "animate.css": "^4.1.1",
+    "axios": "^0.27.2",
+    "bootstrap": "^5.1.3",
+    "bootstrap-icons": "^1.8.3",
+    "core-js": "^3.8.3",
+    "qs": "^6.10.3",
+    "vue": "^3.2.13",
+    "vue-router": "^4.0.3",
+    "vuex": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "@vue/eslint-config-airbnb": "^6.0.0",
+    "autoprefixer": "^10.4.7",
+    "electron": "^13.0.0",
+    "electron-devtools-installer": "^3.1.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-vue": "^8.0.3",
+    "eslint-plugin-vuejs-accessibility": "^1.1.0",
+    "postcss-loader": "^7.0.0",
+    "sass-loader": "^13.0.0",
+    "vue-cli-plugin-electron-builder": "~2.1.1"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "@vue/airbnb"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {
+      "key-spacing": "warn",
+      "quotes": "warn",
+      "comma-dangle": "warn",
+      "no-trailing-spaces": "off",
+      "vuejs-accessibility/label-has-for": "warn",
+      "no-unused-vars": "warn",
+      "no-unused-expressions": "warn",
+      "no-unused-labels": "warn",
+      "no-multiple-empty-lines": "warn",
+      "keyword-spacing": "warn",
+      "semi": "warn",
+      "no-multi-spaces": "warn",
+      "import/no-extraneous-dependencies": "warn",
+      "func-names": "off",
+      "no-undef": "warn",
+      "no-console": "off",
+      "object-curly-newline": "off",
+      "no-plusplus": "off",
+      "no-restricted-syntax": "off",
+      "comma-spacing": "warn",
+      "max-len": [
+        "warn",
+        150
+      ],
+      "import/prefer-default-export": "off",
+      "curly": "off",
+      "padded-blocks": "warn",
+      "no-empty-function": "warn",
+      "global-require": "off",
+      "no-continue": "off",
+      "vuejs-accessibility/click-events-have-key-events" : "off"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}

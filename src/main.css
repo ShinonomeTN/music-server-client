@@ -1,0 +1,238 @@
+/* No drag and select under native */
+
+.no-select :not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+.no-drag a:not([draggable=true]), img:not([draggable=true]) {
+    -webkit-user-drag: none;
+    user-drag: none; /* Technically not supported in Electron yet */
+}
+.no-drag a[href^="http://"], a[href^="https://"], a[href^="ftp://"] {
+    -webkit-user-drag: auto;
+    user-drag: auto; /* Technically not supported in Electron yet */
+}
+
+/* masked fade out scroll view */
+/* credit: https://pqina.nl/blog/fade-out-overflow-using-css-mask-image/ */
+.masked-overflow {
+    /* scroll bar width, for use in mask calculations */
+    --scrollbar-width: 8px;
+
+    /* mask fade distance, for use in mask calculations */
+    --mask-height: 32px;
+
+    /* If content exceeds height of container, overflow! */
+    overflow-y: auto;
+
+    /* Our height limit */
+    /*height: 300px;*/
+
+    /* Need to make sure container has bottom space,
+    otherwise content at the bottom is always faded out */
+    padding-bottom: var(--mask-height);
+    padding-top: var(--mask-height);
+
+    /* Keep some space between content and scrollbar */
+    padding-right: 20px;
+
+    /* The CSS mask */
+
+    /* The content mask is a linear gradient from top to bottom */
+    --mask-image-content: linear-gradient(
+            to bottom,
+            transparent,
+            black var(--mask-height),
+            black calc(100% - var(--mask-height)),
+            transparent
+    );
+
+    /* Here we scale the content gradient to the width of the container
+    minus the scrollbar width. The height is the full container height */
+    --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+
+    /* The scrollbar mask is a black pixel */
+    --mask-image-scrollbar: linear-gradient(black, black);
+
+    /* The width of our black pixel is the width of the scrollbar.
+    The height is the full container height */
+    --mask-size-scrollbar: var(--scrollbar-width) 100%;
+
+    /* Apply the mask image and mask size variables */
+    mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+    mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+
+    /* Position the content gradient in the top left, and the
+    scroll gradient in the top right */
+    mask-position: 0 0, 100% 0;
+
+    /* We don't repeat our mask images */
+    mask-repeat: no-repeat, no-repeat;
+}
+
+/* Firefox */
+.masked-overflow {
+    scrollbar-width: thin; /* can also be normal, or none, to not render scrollbar */
+    scrollbar-color: var(--ms-scroll-view-slider-color) transparent; /* foreground background */
+    /*scrollbar-color: currentColor transparent; !* foreground background *!*/
+}
+
+/* Webkit / Blink */
+.masked-overflow::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+}
+
+.masked-overflow::-webkit-scrollbar-thumb {
+    /*background-color: currentColor;*/
+    background-color: var(--ms-scroll-view-slider-color);
+    border-radius: 9999px; /* always round */
+}
+
+.masked-overflow::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* Some customize */
+
+.view-fixed {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.view-absolute {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+:root {
+    --ms-background-color : #f9f3ed;
+    --ms-button-heightlight-bg-color: white;
+    --ms-button-active-bg-color: rgba(255, 140, 0, 1);
+    --ms-button-active-heightlight-bg-color: rgba(255, 140, 0, 0.7);;
+    --ms-button-press-bg-color: rgba(147, 147, 147, 0.8);
+    --ms-scroll-view-slider-color: lightgray;
+}
+
+body {
+    background-color: var(--ms-background-color);
+}
+
+.ms-safe-area-padding {
+    /*noinspection CssUnresolvedCustomProperty*/ padding-top: var(--ms-title-inset, 0);
+}
+.ms-safe-area-margin {
+    /*noinspection CssUnresolvedCustomProperty*/ margin-top: var(--ms-title-inset, 0);
+}
+
+/* Transitions */
+
+/* fade left */
+.ani-fade-left-enter-active {
+    position: relative;
+    animation: fadeInRight 0.3s;
+}
+
+.ani-fade-left-leave-active {
+    position: relative;
+    animation: fadeOutLeft 0.3s
+}
+
+/* bounce in */
+.ani-bounce-enter-active {
+    position: relative;
+    animation: bounceIn 0.3s;
+}
+
+.ani-bounce-leave-active {
+    position: relative;
+    animation: bounceOut 0.3s;
+}
+
+/* zoom in */
+.ani-zoom-enter-active {
+    position: relative;
+    animation: zoomIn 0.3s;
+}
+
+.ani-zoom-leave-active {
+    position: relative;
+    animation: zoomOut 0.3s;
+}
+
+.ani-zoom-keep-position-enter-active {
+    animation: zoomIn 0.3s;
+}
+
+.ani-zoom-keep-position-leave-active {
+    animation: zoomOut 0.3s;
+}
+
+/* top dock */
+.ani-top-dock-enter-active {
+    position: relative;
+    animation: fadeInDown 0.3s;
+}
+
+.ani-top-dock-leave-active {
+    position: relative;
+    animation: fadeOutUp 0.3s;
+}
+
+/* right dock */
+.ani-right-dock-enter-active {
+    position: relative;
+    animation: fadeInRight 0.3s;
+}
+
+.ani-right-dock-leave-active {
+    position: relative;
+    animation: fadeOutRight 0.3s;
+}
+
+/* fade */
+.ani-fade-enter-active {
+    position: relative;
+    animation: fadeIn 0.3s;
+}
+
+.ani-fade-leave-active {
+    position: relative;
+    animation: fadeOut 0.3s;
+}
+
+.ani-fade-keep-position-enter-active {
+    animation: fadeIn 0.3s;
+}
+
+.ani-fade-keep-position-leave-active {
+    animation: fadeOut 0.3s;
+}
+
+/* switch transition */
+.ani-switch-enter-active {
+    position: relative;
+    animation: fadeIn 0.5s;
+}
+
+.ani-switch-leave-active {
+    position: relative;
+    animation: zoomOut 0.5s;
+}
+
+.ani-switch-keep-position-enter-active {
+    /*position: relative;*/
+    animation: fadeIn 0.5s;
+}
+
+.ani-switch-keep-position-leave-active {
+    /*position: relative;*/
+    animation: zoomOut 0.5s;
+}
