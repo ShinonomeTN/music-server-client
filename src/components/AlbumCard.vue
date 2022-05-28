@@ -1,5 +1,5 @@
 <template>
-  <div class="ms-album-card" :style="sizeStyles">
+  <div class="ms-card ms-album-card" :style="sizeStyles">
     <ms-image-view style="width: inherit; height: inherit" :src="coverArt">
       <template v-slot:empty-image>
         <div class="view-absolute flex-column justify-content-center align-items-center">
@@ -64,12 +64,6 @@ export default {
 </script>
 
 <style>
-.ms-album-card {
-  overflow: hidden;
-  border-radius: 5px;
-  border: #ddd solid 1px;
-  position: relative;
-}
 .ms-album-card:hover .ms-album-card-content {
   transition: padding-top 0.3s;
   padding-top: 50px;

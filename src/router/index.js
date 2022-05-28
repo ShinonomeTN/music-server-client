@@ -14,7 +14,7 @@ import AdminMetaManagementRoute from './modules/admin-meta-mng';
 
 const routes = [
   {
-    path: '',
+    path: '/',
     name: 'Home',
     component: HomeView,
     redirect: '/dash',

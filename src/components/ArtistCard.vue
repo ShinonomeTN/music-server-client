@@ -1,5 +1,5 @@
 <template>
-  <div class="ms-artist-card" :style="styles">
+  <div class="ms-card ms-artist-card" :style="styles">
     <ms-image-view class="ms-artist-card-image" style="width: inherit; height: inherit" :src="coverArt">
       <template v-slot:empty-image>
         <div class="view-absolute"
@@ -58,12 +58,6 @@ export default {
 </script>
 
 <style>
-.ms-artist-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 5px;
-}
-
 .ms-artist-card:hover > .ms-artist-card-title {
   padding-top: 15px;
   transition: padding-top 0.3s;

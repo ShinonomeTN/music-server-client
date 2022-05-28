@@ -26,7 +26,6 @@ function workerKickStart() {
   workerConfig.currentTimeout = setTimeout(() => {
     for (const work of workerConfig.works) {
       if (work.disabled) continue;
-      console.debug('Invoking worker: ', work.name);
       try {
         work.body.bind(work)();
       } catch (e) {
