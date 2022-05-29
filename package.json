@@ -87,7 +87,8 @@
       "no-empty-function": "warn",
       "global-require": "off",
       "no-continue": "off",
-      "vuejs-accessibility/click-events-have-key-events" : "off"
+      "vuejs-accessibility/click-events-have-key-events" : "off",
+      "vuejs-accessibility/form-control-has-label" : "off"
     }
   },
   "browserslist": [

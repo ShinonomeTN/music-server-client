@@ -132,11 +132,57 @@ body {
     /*noinspection CssUnresolvedCustomProperty*/ margin-top: var(--ms-title-inset, 0);
 }
 
+/* Card */
+
 .ms-card {
     overflow: hidden;
     border-radius: 5px;
     border: #ddd solid 1px;
     position: relative;
+}
+
+/* Nav item */
+
+.ms-nav-item {
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+    margin: 0 5pt;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    overflow: hidden;
+    background: none;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.ms-nav-item.active {
+    color: white;
+    background-color: var(--ms-button-active-bg-color);
+}
+.ms-nav-item.active:hover {
+    background: var(--ms-button-active-heightlight-bg-color);
+}
+.ms-nav-item:hover {
+    background: var(--ms-button-heightlight-bg-color);
+}
+
+/* Nav title */
+
+.ms-nav-section {
+    color: var(--bs-secondary);
+    display: flex;
+    padding: 0.5rem 1rem;
+    align-items: center;
+    font-size: small;
+}
+
+.ms-nav-section > hr {
+    color: var(--bs-secondary);
+    display: inline-block;
+    flex-grow: 1;
+    margin: 0 0 0 1rem;
 }
 
 /* Transitions */

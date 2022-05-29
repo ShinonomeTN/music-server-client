@@ -23,22 +23,24 @@
                  :is-modal-show="modal.isShow"
                  :show-close-button="false"
                  v-on:backdrop_click="closeModal"
-                 ref="modal1"
+                 ref="modal1" footer-type="sao-yes-no"
+                 @confirm="modal.onYes"
+                 @cancel="modal.onNo"
   >
-    <template v-slot:footer>
-      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-secondary"
-              @click="modal.onNo"
-      >
-        <i class="bi-x-lg"/>
-        <span style="flex-grow: 1;">NO</span>
-      </button>
-      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-danger"
-              @click="modal.onYes"
-      >
-        <i class="bi-circle"/>
-        <span style="flex-grow: 1">YES</span>
-      </button>
-    </template>
+<!--    <template v-slot:footer>-->
+<!--      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-secondary"-->
+<!--              @click="modal.onNo"-->
+<!--      >-->
+<!--        <i class="bi-x-lg"/>-->
+<!--        <span style="flex-grow: 1;">NO</span>-->
+<!--      </button>-->
+<!--      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-danger"-->
+<!--              @click="modal.onYes"-->
+<!--      >-->
+<!--        <i class="bi-circle"/>-->
+<!--        <span style="flex-grow: 1">YES</span>-->
+<!--      </button>-->
+<!--    </template>-->
   </ms-modal-base>
 </template>
 <script>
@@ -55,7 +57,6 @@ export default {
   },
   methods: {
     onLogoutButtonClick() {
-      if (this.modal.isAnimating) return;
       this.modal.title = 'Logout';
       this.modal.content = 'Are you sure to logging out from this server?';
       this.modal.isShow = true;
@@ -70,19 +71,25 @@ export default {
       }, 300);
     },
     closeModal() {
-      return new Promise((resolve) => {
-        if (this.modal.isAnimating) {
-          resolve();
-          return;
-        }
-        this.modal.isAnimating = true;
-        this.$refs.modal1.isModalBodyVisible = false;
+      return this.$refs.modal1.hideModalBody().then(() => new Promise((resolve) => {
         setTimeout(() => {
           this.modal.isShow = false;
-          this.modal.isAnimating = false;
           resolve();
         }, 500);
-      });
+      }));
+      // return new Promise((resolve) => {
+      //   if (this.modal.isAnimating) {
+      //     resolve();
+      //     return;
+      //   }
+      //   this.modal.isAnimating = true;
+      //   this.$refs.modal1.isModalBodyVisible = false;
+      //   setTimeout(() => {
+      //     this.modal.isShow = false;
+      //     this.modal.isAnimating = false;
+      //     resolve();
+      //   }, 500);
+      // });
     },
     ...mapActions('UserInfo', ['logout']),
   },

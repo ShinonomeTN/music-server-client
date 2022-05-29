@@ -172,4 +172,11 @@ export default {
       params,
     }));
   },
+
+  /** @return { Page } cover art page query result */
+  coverArt_listAll(params) {
+    return $axios(getRequest(composeRequestUrl('/api/cover-art'), {
+      params,
+    })).then(({ data }) => data);
+  },
 };

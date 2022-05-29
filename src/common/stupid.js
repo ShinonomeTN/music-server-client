@@ -12,6 +12,9 @@ copyPropertiesTo(Array.prototype, {
   isEmpty() {
     return this.length === 0;
   },
+  isNotEmpty() {
+    return !this.isEmpty();
+  },
   associatedBy(keyProvider) {
     if (!(keyProvider instanceof Function)) throw Error('keyProvider should be a Function.');
     const map = {};
@@ -28,12 +31,11 @@ copyPropertiesTo(Array.prototype, {
     e.forEach((i) => this.push(i));
   },
   deleteWhere(filter) {
-    for (let i = 0; i < this.length; i++) {
-      if (filter(this[i])) {
-        this.splice(i, 1);
-        return;
-      }
-    }
+    for (let i = 0; i < this.length; i++) if (filter(this[i])) return this.splice(i, 1);
+    return [];
+  },
+  delete(index) {
+    return this.splice(index, 1)
   },
   all() {
     if (this.isEmpty()) return false;
@@ -67,7 +69,8 @@ copyPropertiesTo(Array.prototype, {
   },
   first() {
     if (this.isEmpty()) return null;
-    return this[0];
+    const [first] = this;
+    return first;
   },
   last() {
     if (this.isEmpty()) return null;

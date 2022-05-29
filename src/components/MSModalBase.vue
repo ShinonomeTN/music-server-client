@@ -4,7 +4,7 @@
          v-if="isModalShow" @click="onBackdropClick"></div>
   </transition>
   <transition name="ani-zoom-keep-position" @after-enter="isModalBodyVisible = true" @before-leave="isModalBodyVisible = false">
-    <div class="view-fixed modal-container" v-if="isModalShow">
+      <div class="view-fixed modal-container" v-if="isModalShow">
       <div class="modal-content" :style="modalContentStyle">
         <div class="modal-header">
           <slot name="header">
@@ -12,7 +12,10 @@
             <button v-if="showCloseButton" type="button" class="btn-close" @click="onCloseButtonClick" aria-label="Close"></button>
           </slot>
         </div>
-        <div class="modal-body" :class="{'height-max': isModalBodyVisible, 'height': modalContentHeight, 'collapsable' : !isFullScreen}"
+        <div class="modal-body"
+             :class="{'height': modalContentHeight, 'collapsable' : !isFullScreen, 'height-max': isModalBodyVisible}"
+             @transitioncancel="onBodyTransitionEnd"
+             @transitionend="onBodyTransitionEnd"
              style="overflow: hidden; padding: 0;"
         >
           <transition name="ani-fade">
@@ -23,8 +26,31 @@
         </div>
         <div class="modal-footer" v-if="showFooter">
           <slot name="footer">
-            <button type="button" class="btn btn-secondary" @click="onConfirmButtonClick">Yes</button>
-            <button type="button" class="btn btn-primary" @click="onCancelButtonClick">No</button>
+            <!--     SAO Style YES-NO       -->
+            <template v-if="footerType === 'sao-yes-no'">
+              <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-secondary"
+                      @click="onCancelButtonClick"
+              >
+                <i class="bi-x-lg"/>
+                <span style="flex-grow: 1;">NO</span>
+              </button>
+              <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-danger"
+                      @click="onConfirmButtonClick"
+              >
+                <i class="bi-circle"/>
+                <span style="flex-grow: 1">YES</span>
+              </button>
+            </template>
+
+            <!--     Simple CONFIRM-CANCEL   -->
+            <template v-else-if="footerType === 'confirm-cancel'">
+              <button type="button" class="btn btn-primary"
+                      @click="onConfirmButtonClick" style="width: 100pt"
+              >CONFIRM</button>
+              <button type="button" class="btn btn-secondary" @click="onCancelButtonClick"
+                      style="width: 100pt"
+              >CANCEL</button>
+            </template>
           </slot>
         </div>
       </div>
@@ -71,21 +97,44 @@ export default {
       type: String,
       default: 'modal',
     },
+    footerType: {
+      type: String,
+      default: 'confirm-cancel',
+    },
   },
   data() {
     return {
-      isModalBodyVisible: !this.collapsed || this.isFullScreen,
+      isModalBodyVisible: !this.collapsed || this.type === 'full-screen',
+      isAnimating: false,
+      doOnBodyTransitionEnd: () => {}
     };
   },
   emits: ['close', 'confirm', 'cancel', 'backdrop_click'],
   methods: {
+    onBodyTransitionEnd() {
+      this.doOnBodyTransitionEnd();
+    },
     showModalBody() {
-      if (this.isFullScreen) return;
-      this.isModalBodyVisible = true;
+      if (this.isFullScreen || this.isAnimating) return Promise.resolve();
+      this.isAnimating = true;
+      return new Promise((resolve) => {
+        this.isModalBodyVisible = true;
+        this.onBodyTransitionEnd = () => {
+          if (this.isAnimating) this.isAnimating = false;
+          resolve();
+        };
+      });
     },
     hideModalBody() {
-      if (this.isFullScreen) return;
-      this.isModalBodyVisible = false;
+      if (this.isFullScreen || this.isAnimating) return Promise.resolve();
+      this.isAnimating = true;
+      return new Promise((resolve) => {
+        this.isModalBodyVisible = false;
+        this.onBodyTransitionEnd = () => {
+          if (this.isAnimating) this.isAnimating = false;
+          resolve();
+        };
+      });
     },
     onCloseButtonClick() {
       this.$emit('close');
@@ -116,7 +165,7 @@ export default {
       };
     },
     modalContentHeight() {
-      return withUnitOrPreserve(this.contentHeight, 'px', 'unset');
+      return withUnitOrPreserve(this.contentHeight, 'px', 'fit-content');
     },
     isFullScreen() {
       return this.type === 'full-screen';
@@ -135,11 +184,11 @@ export default {
 <style scoped>
 
 .modal-body.collapsable {
+  max-height: 0;
   transition: max-height 0.5s;
 }
 
 .modal-body {
-  max-height: 0;
   box-shadow: inset 0 0 3pt 3pt whitesmoke;
 }
 
@@ -148,11 +197,8 @@ export default {
 }
 
 /*noinspection CssUnresolvedCustomProperty*/
-.height-max.collapsable {
-  transition: max-height 0.5s;
-}
 .height-max {
-  max-height: var(--window-height, 500px);
+  max-height: var(--window-height, 500px)!important;
 }
 
 .backdrop {
