@@ -1,5 +1,12 @@
 <template>
-  <div ref="container" class="artist-input" :class="{'dialog-like': showDisAmbiguous}" style="flex-grow: 1; display: flex; position: relative">
+  <div ref="container" class="artist-input"
+       :class="{
+          'dialog-like': showDisAmbiguous,
+          'top' : popupPosition === 'top',
+          'bottom' : popupPosition === 'bottom'
+        }"
+       style="flex-grow: 1; display: flex; position: relative"
+  >
     <ms-backdrop :z-index="zIndex - 1" :show="showDisAmbiguous" mode="light-glass" @click="showDisAmbiguous = false; selectedIndex = null" />
 
     <div class="input-form" style="flex-grow: 1;">
@@ -52,6 +59,7 @@ import api from '@/api';
 import { $delay } from '@/common/utils';
 import MSImageView from '@/components/MSImageView.vue';
 import MSBackdrop from '@/components/MSBackdrop.vue';
+import { nextTick } from 'vue';
 
 function mapArtists(item) {
   return {
@@ -76,6 +84,10 @@ export default {
       default: 500,
     },
     modelValue: Array,
+    popupPosition: {
+      type: String,
+      default: 'top',
+    },
   },
   emits: ['update:modelValue'],
   data() {
@@ -86,6 +98,23 @@ export default {
       showDisAmbiguous: false,
       selectedIndex: null,
     };
+  },
+  mounted() {
+    for (const artist of this.modelValue) {
+      const internalModal = {
+        id: artist.id,
+        name: artist.name,
+        image: null,
+        alternatives: [],
+        found: false,
+        ambiguous: false,
+        loading: true,
+      };
+      this.artists.push(internalModal);
+      nextTick(() => {
+        this.loadArtistInfo({ artist: internalModal });
+      });
+    }
   },
   methods: {
     onUpdateArtist() {
@@ -129,6 +158,18 @@ export default {
         const artists = page.content.map((item) => item.artist);
         artist.alternatives.clear();
         artist.alternatives.addAll(artists);
+
+        if (artist.id !== null) {
+          const matched = artists.find((result) => result.id === artist.id).first();
+          if (!matched) {
+            artist.ambiguous = true;
+            return;
+          }
+          const [coverArt] = matched.coverArts;
+          if (coverArt) artist.image = api.config.coverArtUrlOf(coverArt.filePath);
+          return;
+        }
+
         const [first] = artists;
         artist.id = first.id;
         artist.found = true;
@@ -220,22 +261,41 @@ export default {
 
 .artist-input.dialog-like > .input-form {
   border: lightgray solid 1px;
-  border-radius: 0 0 5px 5px;
   background-color: white;
+}
+
+.artist-input.dialog-like.top > .input-form {
+  border-radius: 0 0 5px 5px;
+}
+
+.artist-input.dialog-like.bottom > .input-form {
+  border-radius: 5px 5px 0 0;
 }
 
 .artist-input .dis-ambiguous {
   background-color: white;
   border: lightgray solid 1px;
 
-  border-radius: 5px 5px 0 0;
   overflow-x: hidden;
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+
   min-height: 100%;
+}
+
+.artist-input.top .dis-ambiguous {
+  border-radius: 5px 5px 0 0;
+  bottom: 0;
   margin-bottom: v-bind(componentHeight);
+  border-bottom-color: transparent;
+}
+
+.artist-input.bottom .dis-ambiguous {
+  border-radius: 0 0 5px 5px;
+  top: 0;
+  margin-top: v-bind(componentHeight);
+  border-top-color: transparent;
 }
 
 .artist-input .dis-ambiguous .artist-item {

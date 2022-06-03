@@ -21,7 +21,7 @@
 
         <ms-nav-section-header title="Album Artists" icon="person-square" style="font-size: smaller"/>
         <div class="ms-2 me-3" style="display: flex">
-          <artist-input style="flex-grow: 1" v-model="album.artists">
+          <artist-input style="flex-grow: 1" v-model="album.artists" popup-position="bottom">
             <template v-slot:tailing>
               <button class="ms-2 btn btn-primary btn-sm m-1">
                 <span>Use track artists</span>
@@ -32,7 +32,7 @@
 
         <ms-nav-section-header title="Cover Arts" icon="images" style="font-size: smaller"/>
         <div class="ms-2 me-3">
-          <cover-art-editor ref="coverArtEditor" image-size="100px"/>
+          <cover-art-editor v-model="album.coverArts" image-size="100px"/>
         </div>
 
         <template v-for="(_ ,diskIndex) in album.disks" :key="diskIndex">
@@ -77,17 +77,6 @@
   </div>
 
  <!-- Modal Area -->
-
-  <ms-modal-base ref="modal" :is-modal-show="modal.isShown"
-                 :header="modal.title"
-                 :content="modal.content"
-                 @close="modal.onNo"
-                 @cancel="modal.onNo"
-                 @confirm="modal.onOk"
-                 footer-type="sao-yes-no"
-                 width="50%"
-  />
-
   <ms-modal-base ref="progressModal" :is-modal-show="progressModal.isShow" header="Saving Album"
                  :show-close-button="false" width="50%"
   >
@@ -127,8 +116,8 @@ import { fieldValidator, FormField } from '@/common/FormField';
 import api from '@/api';
 import { mapActions } from 'vuex';
 
-function artistKeyGenerator(artist) {
-  return `${artist.artistId || 'null'}:${artist.artistName}`;
+function buildArtistKey(artist) {
+  return `${artist.id || 'null'}${artist.name}`;
 }
 
 export default {
@@ -150,21 +139,10 @@ export default {
         title: new FormField('New Album', [
           fieldValidator((value) => value, 'Album title should not be empty.'),
         ]),
+        coverArts: [],
         artists: [],
         disks: [],
         isLoading: false,
-      },
-
-      modal: {
-        isShown: false,
-        onOk: () => {},
-        onNo: () => {
-          this.$refs.modal.hideModalBody().then(() => {
-            this.modal.isShown = false;
-          });
-        },
-        title: '',
-        content: '',
       },
 
       progressModal: {
@@ -179,9 +157,6 @@ export default {
       },
 
     };
-  },
-  mounted() {
-
   },
   methods: {
     ...mapActions('GlobalModal', ['showGlobalModal', 'hideGlobalModal']),
@@ -218,7 +193,7 @@ Are you sure to delete disk ${diskIndex + 1} ?
     onDeleteTrack(diskIndex, trackIndex) {
       const track = this.album.disks[diskIndex].tracks[trackIndex];
       this.showGlobalModal({
-        title: `Delete track`,
+        title: 'Delete track',
         content: `
 Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'} (at disk ${diskIndex + 1}, index ${trackIndex + 1})?
 <br/> Track data will be deleted. This operation cannot be reverted.
@@ -229,290 +204,185 @@ Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'
       });
     },
 
-    getArtistOfTrack(cdIndex, trackIndex) {
-      let ref = this.$refs[`cd-${cdIndex}-track-${trackIndex}-artists`];
-      // eslint-disable-next-line prefer-destructuring
-      if (ref instanceof Array) ref = ref[0];
-      // return this.getArtistFromArtistInput(ref);
-    },
-
-    /**
-     * @typedef { Object } ArtistRef
-     * @property { string } artistName
-     * @property { number | null } artistId
-     */
-
-    /**
-     * @typedef { Object } TrackEditorModal
-     * @property { number } diskNumber
-     * @property { number } trackNumber
-     * @property { string } title
-     * @property { Array[ArtistRef] } artists
-     * @property { Array[{ protocol : string, server: string, url: string }] } recordings
-     */
-
-    /**
-     * @typedef { Object } CoverArtRef
-     * @property { 'file' | 'cover-art' } type
-     * @property { File | { id: number, filePath: String} } data
-     * @property { string } preview
-     */
-
-    /**
-     * @typedef { Object } PreProcessInfo
-     * @property { String } albumTitle
-     * @property { Array[CoverArtRef] } coverArts
-     * @property { Array[ArtistRef] } artists
-     * @property { Array[TrackEditorModal] } tracks
-     */
     async onSubmit() {
-      const { coverArtEditor, artistInput } = this.$refs;
-      const info = {
-        albumTitle: this.album.title.value,
-        coverArts: [...coverArtEditor.coverArtModal],
-        artists: this.getArtistFromArtistInput(artistInput),
-        tracks: this.album.disks
-          .mapIndexed((disk, diskIndex) => disk.tracks.mapIndexed((track, trackIndex) => ({
-            diskNumber: diskIndex + 1,
-            trackNumber: trackIndex + 1,
-            title: track.title,
-            artists: this.getArtistOfTrack(diskIndex, trackIndex),
-            recordings: track.recordings.map((recording) => {
-              const [match, protocol, server, location] = recording.url.match(/^(https?):\/\/([\d.A-Za-z_\-@:]+)?\/?(.*)$/);
-              if (!match) return null;
-              return {
-                protocol,
-                server,
-                location,
-              };
-            }).filter((item) => item),
-          }))).flatMap((item) => item),
-      };
-      if (!await this.checkArtistExists(info)) return;
-      console.log(info);
-      const actions = this.buildAlbumSaveActions(info);
-      await this.handleAlbumSave(actions);
-    },
-    /**
-     * @param { PreProcessInfo } info
-     * @returns {Promise<boolean>}
-     */
-    async checkArtistExists(info) {
-      // confirm artist create
-      const nonExistsArtists = [
-        ...info.artists.filter((item) => !(item.artistId)),
-        ...info.tracks.map((item) => item.artists).flatMap((item) => item).filter((item) => !(item.artistId)),
-      ].distinctBy((item) => item.artistName);
-
-      if (nonExistsArtists.isNotEmpty()) {
-        const confirmCreate = await new Promise((resolve) => {
-          this.modal.title = 'Create non exists artists.';
-          this.modal.content = `<span>Those artists are not exists on this server:</span>
-                              <br/><span>${nonExistsArtists.map((item) => item.artistName).join(', ')}</span>
-                              <br/><span>Would you want to automatically create them?</span>`;
-
-          this.modal.onOk = () => this.$refs.modal.hideModalBody().then(() => {
-            this.modal.isShown = false;
-            resolve(true);
-          });
-
-          this.modal.onNo = () => this.$refs.modal.hideModalBody().then(() => {
-            this.modal.isShown = false;
-            resolve(false);
-          });
-          this.modal.isShown = true;
-        });
-
-        if (!confirmCreate) return false;
-      }
-
-      const ambiguousArtists = [
-        ...info.artists.filter((item) => !(item.confirmed)),
-        ...info.tracks.map((item) => item.artists).flatten().filter((item) => !(item.confirmed)),
-      ];
-      if (ambiguousArtists.isNotEmpty()) {
-        const confirmCreate = await new Promise((resolve) => {
-          this.modal.title = 'Artist ambiguous';
-          this.modal.content = `<span>Those artists are ambiguous:</span>
-                              <br/><span>${ambiguousArtists.map((item) => item.artistName).join(', ')}</span>
-                              <br/><span>Would you want to automatically use first artist in search result?</span>`;
-
-          this.modal.onOk = () => this.$refs.modal.hideModalBody().then(() => {
-            this.modal.isShown = false;
-            resolve(true);
-          });
-
-          this.modal.onNo = () => this.$refs.modal.hideModalBody().then(() => {
-            this.modal.isShown = false;
-            resolve(false);
-          });
-          this.modal.isShown = true;
-        });
-
-        if (!confirmCreate) return false;
-      }
-
-      return true;
-    },
-    /**
-     *
-     * @param { PreProcessInfo } info
-     * @returns {*[]}
-     */
-    buildAlbumSaveActions(info) {
-      const actions = [];
-      const coverArts = [...info.coverArts.map((coverArt) => ({
-        id: coverArt.type === 'file' ? null : coverArt.data.id,
-        data: coverArt.type === 'file' ? coverArt.data : null,
-      }))];
-
-      const album = {
-        title: info.albumTitle,
-      };
-
+      const { album } = this;
       const artists = [
-        ...info.artists,
-        ...info.tracks.map((item) => item.artists).flatten(),
-      ].distinctBy((item) => artistKeyGenerator(item));
+        ...album.artists,
+        ...album.disks.flatMap((disk) => disk.tracks).map((track) => track.artists).flatten(),
+      ].distinctBy((item) => `${item.id || 'null'}:${item.name}`);
 
-      const tracks = [...info.tracks];
-      for (const track of tracks) {
-        const artistsKeys = track.artists.map((item) => artistKeyGenerator(item)).distinct();
-        track.artists = artistsKeys
-          .map((item) => artists.firstMatch((artist) => artistKeyGenerator(artist) === item))
-          .filter((item) => item);
-      }
+      if (!await this.onSubmit_checkArtistAmbiguous(artists)) return;
+      if (!await this.onSubmit_checkArtistAutoCreate(artists)) return;
 
-      const recordings = tracks.map((track) => track.recordings.map((recording) => ({
-        track,
-        ...recording,
-      }))).flatten();
+      const actions = [];
 
-      const workContext = { album, coverArts, artists, tracks, recordings };
-
+      // Create artists
       actions.push(async (progress, title) => {
-        const uploadItems = workContext.coverArts.filter((item) => !item.id);
-        if (uploadItems.isEmpty()) {
+        title('Preparing artists.');
+        progress(1);
+        const nonExists = artists.filter((artist) => artist.id === null);
+        const base = 1 / nonExists.length;
+        let count = 0;
+        for (const artist of nonExists) {
+          title(`Creating Artist ${artist.name}`);
+          const created = await api.artist_create({ name: artist.name }).then((data) => data.artist);
+          artist.id = created.id;
+          count++;
+          progress(count * base * 100);
+        }
+        progress(100);
+      });
+
+      // Create cover arts
+      actions.push(async (progress, title) => {
+        const coverArts = album.coverArts.filter((coverArt) => (coverArt.type === 'file'));
+        if (coverArts.isEmpty()) {
           progress(100);
           return;
         }
-        const base = 1 / uploadItems.length;
-        let current = 0;
+        title('Uploading cover art');
         progress(1);
-        for (const uploadItem of uploadItems) {
-          title(`Uploading '${uploadItem.data.filename}'.`);
-          // eslint-disable-next-line no-loop-func
-          const coverArt = await api.coverArt_upload([uploadItem.data], (event) => {
+        const base = 1 / coverArts.length;
+        let count = 0;
+        for (const coverArt of coverArts) {
+          coverArt.id = (await api.coverArt_upload([coverArt.data], (event) => {
             if (event.lengthComputable) {
-              progress(((current + (event.loaded / event.total)) * base) * 100);
+              progress(((count + (event.loaded / event.total)) * base) * 100);
             }
-          }).then((data) => data.first().coverArt);
-          current++;
-          progress((current * base) * 100);
-          uploadItem.id = coverArt.id;
+          }).then((data) => data.first().coverArt)).id;
+          count++;
+          progress(count * base * 100);
         }
-        progress(100);
       });
 
+      // Create album
       actions.push(async (progress, title) => {
-        const newArtists = workContext.artists.filter((artist) => !artist.id);
-        if (newArtists.isEmpty()) {
-          progress(100);
-          return;
-        }
-        const base = 1 / newArtists.length;
-        let current = 0;
+        title(`Creating album '${album.title.value}'`);
         progress(1);
-        for (const newArtist of newArtists) {
-          title(`Creating Artist '${newArtist.artistName}'.`);
-          const artist = await api.artist_create({ name: newArtist.artistName }).then((data) => data.artist);
-          newArtist.id = artist.id;
-          current++;
-          progress((current * base) * 100);
-        }
-        progress(100);
-      });
-
-      actions.push(async (progress, title) => {
-        const newAlbum = workContext.album;
-        progress(1);
-        title(`Creating Album '${newAlbum.title}'.`);
-        workContext.album.id = (await api.album_create({
-          title: newAlbum.title,
-          coverArtIds: workContext.coverArts.map((coverArt) => coverArt.id),
-          artistIds: workContext.artists.map((artist) => artist.id),
+        album.id = (await api.album_create({
+          title: album.title.value,
+          artistIds: artists.mapNotNull((artist) => artist.id),
+          coverArtIds: album.coverArts.mapNotNull((coverArt) => ((coverArt.type === 'file') ? coverArt.id : coverArt.data.id)),
         }).then((data) => data.album)).id;
         progress(100);
       });
 
+      // Create tracks
       actions.push(async (progress, title) => {
-        const newTracks = workContext.tracks;
-        if (newTracks.isEmpty()) {
-          progress(100);
-          return;
-        }
+        const tracks = album.disks.mapIndexed((disk, index) => disk.tracks.map((track) => ({
+          track,
+          diskId: index + 1,
+        })));
+
+        if (tracks.isEmpty()) { progress(100); return; }
+        title('Creating tracks');
         progress(1);
-        const base = 1 / newTracks.length;
-        let current = 0;
-        for (const track of newTracks) {
-          title(`Creating Track '${track.title}'.`);
+        const base = 1 / tracks.length;
+        let count = 0;
+        for (const { track, diskId } of tracks) {
+          title(`Creating track '${track.title}'`);
           track.id = (await api.track_create({
             title: track.title,
-            artistIds: track.artists.map((artist) => artist.id),
-            albumId: workContext.album.id,
-            diskNumber: track.diskNumber,
+            artistIds: track.artists
+              .mapNotNull((artist) => artists.firstMatch((exists) => buildArtistKey(artist) === buildArtistKey(exists)))
+              .map((artist) => artist.id),
+            diskNumber: diskId,
             trackNumber: track.trackNumber,
+            albumId: album.id,
           }).then((data) => data.track)).id;
-          current++;
-          progress((current * base) * 100);
+          count++;
+          progress(count * base * 100);
         }
-        progress(100);
       });
 
+      // Create recordings
       actions.push(async (progress, title) => {
-        const newRecordings = workContext.recordings;
-        if (newRecordings.isEmpty()) {
-          progress(100);
-          return;
-        }
+        const recordings = album.disks.flatMap((disk) => disk.tracks)
+          .flatMap((track) => track.recordings.map((recording) => ({
+            recording,
+            track,
+          })));
+
+        if (recordings.isEmpty()) { progress(100); return; }
+
+        title('Appending Recording to tracks.');
         progress(1);
-        const base = 1 / newRecordings;
-        let current = 0;
-        for (const recording of newRecordings) {
-          title(`Append recording to '${recording.track.title}'.`);
+        const base = 1 / recordings.length;
+        let count = 0;
+        for (const { recording, track } of recordings) {
+          title(`Appending Recording to track '${track.title}'`);
           await api.recording_create({
-            trackId: recording.track.id,
+            trackId: track.id,
             protocol: recording.protocol,
             server: recording.server,
             location: recording.location,
           });
-          current++;
-          progress((current * base) * 100);
+          count++;
+          progress(count * base * 100);
         }
       });
 
-      return actions;
+      await this.handleAlbumSave(actions);
     },
+
+    async onSubmit_checkArtistAutoCreate(artists) {
+      const nonExists = artists.filter((artist) => !artist.id);
+      if (nonExists.isNotEmpty()) return new Promise((resolve) => {
+        this.showGlobalModal({
+          title: 'Artists not Exists',
+          content: `
+Those artists are not exists on this server: <br/>
+${nonExists.map((artist) => artist.name).join(', ')} <br/>
+Would you want them be auto-created?
+`,
+          buttonType: 'sao-yes-no',
+          onConfirm: () => this.hideGlobalModal().then(() => {
+            resolve(true);
+          }),
+          onCancel: () => this.hideGlobalModal().then(() => {
+            resolve(false);
+          }),
+        });
+      });
+
+      return Promise.resolve(true);
+    },
+
+    async onSubmit_checkArtistAmbiguous(artists) {
+      const ambiguous = artists.filter((artist) => artist.ambiguous);
+      if (ambiguous.isNotEmpty()) return new Promise((resolve) => {
+        this.showGlobalModal({
+          title: 'Artist ambiguous',
+          content: `
+There are some artists have same names: <br/>
+${ambiguous.map((artist) => artist.name).join(', ')}
+Would you want to use first matched result as their name?
+          `,
+          buttonType: 'sao-yes-no',
+          onConfirm: () => this.hideGlobalModal().then(() => {
+            resolve(true);
+          }),
+          onCancel: () => this.hideGlobalModal().then(() => {
+            resolve(false);
+          }),
+        });
+      });
+      return Promise.resolve(true);
+    },
+
     async handleAlbumSave(actions) {
       const { progressModal } = this;
       let i = 0;
-      function reportProgress(value) {
-        const base = (1 / actions.length);
-        const progress = ((i + (value / 100)) * base) * 100;
-        console.log(progress);
-        progressModal.progress = progress;
-      }
-      function reportTitle(value) {
-        progressModal.progressTitle = value;
-      }
+
+      function reportProgress(value) { progressModal.progress = ((i + (value / 100)) * (1 / actions.length)) * 100; }
+      function reportTitle(value) { progressModal.progressTitle = value; }
 
       progressModal.isShow = true;
       progressModal.progressState = 'normal';
       let error = false;
+
       for (; i < actions.length; i++) {
-        try {
-          await actions[i](reportProgress, reportTitle);
-        } catch (e) {
+        try { await actions[i](reportProgress, reportTitle); } catch (e) {
           progressModal.progressState = 'error';
           progressModal.progressTitle = `Error: ${e}`;
           error = true;
@@ -524,6 +394,7 @@ Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'
         progressModal.progressState = 'finished';
         progressModal.progressTitle = 'Finished';
       }
+
       progressModal.footerEnabled = true;
     },
   },

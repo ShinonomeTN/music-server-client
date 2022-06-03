@@ -4,6 +4,11 @@
       <div class="title-container">
         <div style="background-color: white; padding: 0 2px; overflow: hidden">
           <input type="text" class="ms-input-no-style title-label protocol"
+                 :class="{
+                    'http': protocol === 'http',
+                    'https': protocol === 'https',
+                    'others': protocol !== 'http' && protocol !== 'https'
+                 }"
                  :style="protocolStyle" :value="protocol" @input="$emit('update:protocol', $event.target.value)"
           />
           <input type="text" class="ms-input-no-style title-label server"
@@ -50,7 +55,7 @@ export default {
     protocolStyle() {
       const { protocol } = this;
       return {
-        width: `${protocol.length > 3 ? (protocol.length + 3) : 3}ch`,
+        width: `${protocol.length > 1 ? (protocol.length + 3) : 3}ch`,
         fontFamily: 'monospace',
         textAlign: 'center',
       };
@@ -58,7 +63,7 @@ export default {
     serverStyle() {
       const { server } = this;
       return {
-        width: `${server.length > 3 ? (server.length + 3) : 3}ch`,
+        width: `${server.length > 1 ? (server.length + 3) : 3}ch`,
         fontFamily: 'monospace',
         textAlign: 'center',
       };
@@ -112,9 +117,23 @@ export default {
   color: white ;
   border-radius: 4px 0 0 4px;
   border-width: 1px 0 1px 1px;
+  min-width: 0;
+}
+
+.recording-item .title-label.protocol.https {
   border-color: var(--bs-green);
   background-color: var(--bs-green);
-  min-width: 0;
+}
+
+.recording-item .title-label.protocol.http {
+  border-color: var(--bs-secondary);
+  background-color: var(--bs-secondary);
+}
+
+.recording-item .title-label.protocol.others {
+  border-color: var(--bs-warning);
+  background-color: var(--bs-warning);
+  color: black!important;
 }
 
 .recording-item .title-label.server {

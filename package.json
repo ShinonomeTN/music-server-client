@@ -93,7 +93,10 @@
       "no-await-in-loop": "off",
       "no-param-reassign": "off",
       "vue/no-unused-components" : "warn",
-      "template-curly-spacing" : "warn"
+      "template-curly-spacing" : "warn",
+      "no-useless-return": "warn",
+      "no-useless-call": "warn",
+      "no-loop-func": "off"
     }
   },
   "browserslist": [

@@ -100,6 +100,13 @@ export default {
       this.recordingList.push(components);
       this.didRecordingUpdate();
       this.recordingInput = '';
+      const { location } = components;
+      // Filename auto-complete
+      if (location && location !== '' && (!this.title || this.title === '')) {
+        const last = location.split('/').last().trim(); if (last === '') return;
+        const [matched, filename] = last.match(/^(.+?)(\..+?)[?]?.+$/); if (!matched) return;
+        this.$emit('update:title', decodeURIComponent(filename));
+      }
     },
     didRecordingUpdate() {
       this.$emit('update:recordings', this.recordingList);
@@ -135,20 +142,20 @@ export default {
     },
     artistList: {
       get() {
-        return this.artists
+        return this.artists;
       },
       set(value) {
-        this.$emit('update:artists', value)
-      }
+        this.$emit('update:artists', value);
+      },
     },
     trackTitle: {
       get() {
-        return this.title
+        return this.title;
       },
       set(value) {
-        this.$emit('update:title', value)
-      }
-    }
+        this.$emit('update:title', value);
+      },
+    },
   },
 };
 </script>

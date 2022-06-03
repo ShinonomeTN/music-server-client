@@ -66,15 +66,15 @@ export default {
 }
 
 .avatar-with-name-tag.bg-success {
-  color: white
+  color: white!important;
 }
 
 .avatar-with-name-tag.bg-danger {
-  color: white
+  color: white!important;
 }
 
 .avatar-with-name-tag.bg-secondary {
-  color: white
+  color: white!important;
 }
 
 .avatar-with-name-tag::before:hover {

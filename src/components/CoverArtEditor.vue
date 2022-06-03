@@ -1,11 +1,5 @@
 <template>
 <div class="ms-cover-art-editor">
-<!--  <div class="ms-cover-art-editor-empty-view" v-if="isEmpty" :style="emptyViewStyle">-->
-<!--    <button class="btn btn-success" @click="onAddCoverArt">-->
-<!--      <i class="bi-plus-lg" />-->
-<!--      <span>Add Cover Art</span>-->
-<!--    </button>-->
-<!--  </div>-->
   <div class="ms-cover-art-editor-cover-arts">
     <ms-item-overlay class="m-1" border-radius="10px" @click="onAddCoverArt">
       <ms-image-view width="100px" height="100px" border-radius="10px"
@@ -19,7 +13,7 @@
         </template>
       </ms-image-view>
     </ms-item-overlay>
-    <ms-item-overlay class="m-1" v-for="(item,index) in coverArtModal" :key="index" border-radius="10px"
+    <ms-item-overlay class="m-1" v-for="(item,index) in modelValue" :key="index" border-radius="10px"
                      fade-on-hover
     >
       <ms-image-view :src="item.preview" width="100px" height="100px" border-radius="10px" />
@@ -38,7 +32,6 @@
 </template>
 
 <script>
-import { withUnitOrPreserve } from '@/common/utils';
 import CoverArtSelectModal from '@/components/CoverArtSelectModal.vue';
 import MSImageView from '@/components/MSImageView.vue';
 import MSItemOverlay from '@/components/MSItemOverlay.vue';
@@ -52,7 +45,9 @@ export default {
   },
   props: {
     imageSize: [Number, String],
+    modelValue: Array,
   },
+  emits: ['update:modelValue'],
   data() {
     return {
       coverArtModal: [],
@@ -64,24 +59,15 @@ export default {
       this.selectWindowShow = true;
     },
     onSubmitNewItems(newItems) {
-      this.coverArtModal.addAll(newItems);
+      this.$emit('update:modelValue', [...this.modelValue, ...newItems]);
       this.selectWindowShow = false;
     },
     onItemDelete(item) {
-      this.coverArtModal.deleteWhere((item2) => item2 === item);
+      this.$emit('update:modelValue', [...this.modelValue.filter((item2) => item2 !== item)]);
     },
   },
   computed: {
-    isEmpty() {
-      return this.coverArtModal.isEmpty();
-    },
-    emptyViewStyle() {
-      const size = withUnitOrPreserve(this.imageSize, 'px', '100px');
-      return {
-        height: size,
-        minHeight: size,
-      };
-    },
+
   },
 };
 </script>

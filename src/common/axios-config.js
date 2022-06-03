@@ -20,24 +20,33 @@ export const prettyAxiosError = (error) => ({
     ...(({ request, config }) => {
       if (!request) return {};
 
-      // eslint-disable-next-line no-underscore-dangle
-      const headerLines = request._header
-        .split('\r\n')
-        .map((line) => line.trim())
-        .filter((line) => line !== '');
+      const headers = (() => {
+        // eslint-disable-next-line no-underscore-dangle
+        const header = request._header; if (!header) return null;
+        const headerLines = header
+          .split('\r\n')
+          .map((line) => line.trim())
+          .filter((line) => line !== '');
 
-      const [method, location, httpVersion] = headerLines.splice(0, 1)[0].split(' ');
+        const [method, location, httpVersion] = headerLines.splice(0, 1)[0].split(' ');
+        return {
+          method,
+          location,
+          httpVersion,
+          headers: headerLines.mapNotNull((line) => {
+            const [matched, key, value] = line.match(/^(.+[^:]):(.+)$/);
+            return matched ? [key, value] : null;
+          }).mapToMap(([key]) => key, ([, value]) => value),
+        };
+      })() || (() => ({
+        method: 'UNKNOWN',
+        location: 'UNKNOWN',
+        httpVersion: 'UNKNOWN',
+        headers: [],
+      }))();
 
       return {
-        method,
-        location,
-        httpVersion,
-
-        headers: headerLines.mapNotNull((line) => {
-          const [matched, key, value] = line.match(/^(.+[^:]):(.+)$/);
-          return matched ? [key, value] : null;
-        }).mapToMap(([key]) => key, ([, value]) => value),
-
+        ...headers,
         ...filteringFields(config, 'url', 'timeout', 'data'),
       };
     })(error),
