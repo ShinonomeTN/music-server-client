@@ -3,7 +3,7 @@
     <div class="main-navbar ms-safe-area-margin">
       <main-nav-bar/>
     </div>
-    <div class="main-content"
+    <div class="main-content ms-safe-area-margin"
          :class="[{'child-require-flex': childRequireFlex},
                   {'child-require-scroll-y': childRequireScrollY},
                   {'child-require-relative': childRequireRelative}]"
@@ -87,6 +87,7 @@ export default {
   overflow: hidden;
   /*overflow-y: scroll;*/
 }
+
 .main-content.child-require-scroll-y {
   overflow-y: scroll;
 }

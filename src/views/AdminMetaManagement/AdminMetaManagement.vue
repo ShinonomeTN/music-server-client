@@ -1,7 +1,7 @@
 <template>
-<div class="ms-safe-area-margin">
-  <router-view/>
-</div>
+  <div style="display: flex; flex-grow: 1">
+    <router-view/>
+  </div>
 </template>
 
 <script>

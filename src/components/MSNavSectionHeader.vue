@@ -3,8 +3,8 @@
     <slot v-if="icon" name="icon">
       <i :class="[`bi-${icon}`]"></i>
     </slot>
-    <span class="ps-2">{{ title }}</span>
-    <hr/>
+    <span class="ps-2" style="white-space: nowrap">{{ title }}</span>
+    <hr style="flex-grow: 1"/>
   </div>
 </template>
 
@@ -25,5 +25,8 @@ export default {
 </script>
 
 <style>
-
+.ms-nav-section {
+  display: flex;
+  align-items: center;
+}
 </style>

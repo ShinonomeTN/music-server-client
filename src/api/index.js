@@ -136,8 +136,12 @@ export default {
     return $axios(postRequest(composeRequestUrl('api/auth/login/refresh')));
   },
 
-  refreshToken() {
-    return $axios(postRequest(composeRequestUrl('api/auth/token/refresh')));
+  refreshToken(token) {
+    return $axios(postRequest(composeRequestUrl('api/auth/token/refresh'), {
+      headers: {
+        'X-APP-TOKEN': token,
+      },
+    }));
   },
 
   auth_login({ username, password }) {
@@ -159,10 +163,26 @@ export default {
     )).then(({ data }) => data);
   },
 
+  album_create({ title, artistIds, coverArtIds }) {
+    const query = new URLSearchParams({ title });
+    artistIds.forEach((item) => query.append('albumArtistId', `${item}`));
+    coverArtIds.forEach((item) => query.append('albumArtId', `${item}`));
+    return $axios(postRequest(composeRequestUrl('api/meta/album'), {
+      data: query,
+    })).then(({ data }) => data);
+  },
+
   /** @return { Page } artist page query result */
   artist_listAll(params) {
     return $axios(getRequest(composeRequestUrl('api/meta/artist'), {
       params,
+    })).then(({ data }) => data);
+  },
+
+  artist_create({ name }) {
+    const query = new URLSearchParams({ name });
+    return $axios(postRequest(composeRequestUrl('api/meta/artist'), {
+      data: query,
     })).then(({ data }) => data);
   },
 
@@ -173,10 +193,34 @@ export default {
     }));
   },
 
+  track_create({ title, artistIds, albumId, diskNumber, trackNumber }) {
+    const query = new URLSearchParams({ title, diskNumber, trackNumber, albumId });
+    artistIds.forEach((item) => query.append('artistId', `${item}`));
+    return $axios(postRequest(composeRequestUrl('api/meta/track'), {
+      data: query,
+    })).then(({ data }) => data);
+  },
+
+  recording_create({ trackId, protocol, server, location }) {
+    const query = new URLSearchParams({ protocol, server, location });
+    return $axios(postRequest(composeRequestUrl(`api/meta/track/${trackId}/recording`), {
+      data: query,
+    })).then(({ data }) => data);
+  },
+
   /** @return { Page } cover art page query result */
   coverArt_listAll(params) {
     return $axios(getRequest(composeRequestUrl('/api/cover-art'), {
       params,
+    })).then(({ data }) => data);
+  },
+
+  coverArt_upload(files, onUploadProgress) {
+    const form = new FormData();
+    files.forEach((file) => form.append('cover_art', file));
+    return $axios(postRequest(composeRequestUrl('/api/cover-art'), {
+      data: form,
+      onUploadProgress,
     })).then(({ data }) => data);
   },
 };

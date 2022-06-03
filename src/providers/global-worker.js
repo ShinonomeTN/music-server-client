@@ -60,10 +60,14 @@ export default {
    * @param { function } body work content
    * @param { string } name work name
    * @param { boolean } restartIfError continue if worker meets error
+   * @param { number | null | undefined } delay work start delay
    */
-  newWork(body, name, restartIfError) {
+  newWork(body, name, restartIfError, delay) {
     const work = new Work({ body, name, restartWhenError: restartIfError });
-    workerConfig.works.push(work);
+
+    if (delay) setTimeout(() => workerConfig.works.push(work), delay);
+    else workerConfig.works.push(work);
+
     return work;
   },
 

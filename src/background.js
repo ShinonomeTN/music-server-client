@@ -1,3 +1,5 @@
+import '@/common/stupid';
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app, protocol, BrowserWindow, session } from 'electron';
 
@@ -5,6 +7,7 @@ import { app, protocol, BrowserWindow, session } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import { configureRPCHandlers, windowConfiguration } from '@/native';
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';

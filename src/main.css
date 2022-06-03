@@ -119,6 +119,12 @@
     --ms-button-active-heightlight-bg-color: rgba(255, 140, 0, 0.7);;
     --ms-button-press-bg-color: rgba(147, 147, 147, 0.8);
     --ms-scroll-view-slider-color: lightgray;
+
+    --ms-component-level-background: -1;
+    --ms-component-level-dialog: 999;
+    --ms-component-level-dialog-backdrop: 899;
+    --ms-component-level-dialog-control: 1000;
+    --ms-component-level-component: 1;
 }
 
 body {
@@ -130,6 +136,54 @@ body {
 }
 .ms-safe-area-margin {
     /*noinspection CssUnresolvedCustomProperty*/ margin-top: var(--ms-title-inset, 0);
+}
+
+/* Input */
+
+input.ms-input-no-style {
+    border: none;
+    background: transparent;
+    min-width: 100px;
+    outline: none;
+}
+
+input.ms-input-no-style + div.input-decorator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+input.ms-input-no-style + div.input-decorator.line-bottom {
+    border-bottom: transparent solid 1px;
+    left: 50%;
+    right: 50%;
+    transition: all 0.5s;
+}
+
+input.ms-input-no-style:focus + div.input-decorator.line-bottom {
+    border-bottom-color: gray!important;
+    left: 0;
+    right: 0;
+}
+
+.ms-flex-scrollable-container {
+    flex-grow: 1;
+    position: relative;
+}
+.ms-flex-scrollable-container > .content-wrapper {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    flex-direction: column;
+    min-height: 0;
+    position: absolute;
+}
+
+.ms-flex-scrollable-container > .content-wrapper > .content{
+    flex: 1;
+    overflow: auto;
 }
 
 /* Card */

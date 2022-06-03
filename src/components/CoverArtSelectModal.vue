@@ -40,7 +40,9 @@
         <div v-else style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; align-items: center"
              class="m-3"
         >
-          <ms-item-overlay class="m-1" border-radius="10px" v-for="(item,index) in uploadStage.items" :key="index">
+          <ms-item-overlay class="m-1" border-radius="10px" v-for="(item,index) in uploadStage.items" :key="index"
+                           fade-on-hover
+          >
             <ms-image-view :src="item.image" border-radius="10px" width="100px" height="100px"/>
             <template v-slot:overlay-item>
               <button class="btn btn-sm btn-danger" @click="deleteUploadItem(index)">
@@ -205,10 +207,11 @@ export default {
           preview: api.config.coverArtUrlOf(item.filePath),
         })),
       ]);
+      this.reset();
     },
     onClose() {
       if (this.canSubmit) {
-        const { modal } = this.modal;
+        const { modal } = this;
         modal.title = 'Leaving Selecting';
         modal.content = 'There are items be selected, your selection will be discard. Would you want to leave?';
         modal.onYes = () => {
@@ -223,12 +226,13 @@ export default {
             this.modal.isShow = false;
           });
         };
+        modal.isShow = true;
         return;
       }
       this.$emit('close');
     },
     onClearAll() {
-      const { modal } = this.modal;
+      const { modal } = this;
       modal.title = 'Clear all selected';
       modal.content = 'Are you sure to clear all selected item and items that waiting for upload?';
       modal.onYes = () => {

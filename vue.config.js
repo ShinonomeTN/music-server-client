@@ -9,14 +9,18 @@ module.exports = defineConfig({
     },
   },
   devServer: {
-    proxy: 'http://10.0.233.3:8054',
+    proxy: 'https://audio.derjager.work',
   },
   transpileDependencies: true,
   chainWebpack: (config) => {
-    if (process.env.NODE_ENV === 'production') return;
-    config.plugin('html')
+    if (process.env.NODE_ENV !== 'production') config.plugin('html')
       .tap((args) => {
         args[0].template = `${path.resolve(__dirname)}/public/dev_index.html`;
+        return args;
+      });
+    else config.plugin('html')
+      .tap((args) => {
+        args[0].template = `${path.resolve(__dirname)}/public/prod_index.html`;
         return args;
       });
   },

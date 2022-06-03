@@ -10,17 +10,19 @@ const config = {
 };
 
 export function reloadNativeConfig() {
-  $native('platform', null)
-    .then((result) => {
-      config.platform = result;
-      if (result === 'darwin') config.titleBarHeight = 30;
-      else config.titleBarHeight = 60;
+  setTimeout(() => {
+    $native('platform', null)
+      .then((result) => {
+        config.platform = result;
+        if (result === 'darwin') config.titleBarHeight = 30;
+        else config.titleBarHeight = 60;
 
-      document.body.style.setProperty('--ms-title-inset', `${config.titleBarHeight}px`);
-    })
-    .catch(() => {
-      console.info('Did not detect native platform.');
-    });
+        document.body.style.setProperty('--ms-title-inset', `${config.titleBarHeight}px`);
+      })
+      .catch(() => {
+        console.info('Did not detect native platform.');
+      });
+  }, 1000)
 }
 
 export default config;

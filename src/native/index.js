@@ -8,6 +8,17 @@ import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+function rpcExecutionWrapper(method) {
+  return async (event, param) => {
+    try {
+      const result = await method(event, param);
+      return Promise.resolve(result);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+}
+
 export function configureRPCHandlers() {
   const handlerList = {
     ...requestDelegate,
@@ -15,9 +26,8 @@ export function configureRPCHandlers() {
     ...platformDelegate,
   };
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const [key, value] of Object.entries(handlerList)) {
-    ipcMain.handle(key, value);
+    ipcMain.handle(key, rpcExecutionWrapper(value));
     console.log(`Register rpc method '${key}'.`);
   }
 }

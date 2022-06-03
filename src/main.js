@@ -26,14 +26,13 @@ window.onload = () => {
 
   createApp(App).use(store).use(router).mount('#app');
 
-  // Session refresh job
   globalWorker.newWork(() => {
     store.dispatch('UserInfo/renewLoginSession').then(() => {
     }).catch((e) => {
       console.error('Session refresh failed.', e);
       store.commit('UserInfo/setLoggedIn', false);
     });
-  }, 'Session Renew Work', true);
+  }, 'Session Renew Work', true, 10000);
 
   globalWorker.start();
 };

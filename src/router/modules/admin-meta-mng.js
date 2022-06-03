@@ -20,6 +20,9 @@ export default [
         path: 'album',
         name: 'AdminAlbumCreate',
         component: () => import('@/views/AdminMetaManagement/AdminAlbumEdit.vue'),
+        meta: {
+          requireFlex: true,
+        },
       },
       {
         path: 'album/[albumId]',

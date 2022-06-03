@@ -19,33 +19,22 @@
       </transition>
     </div>
   </div>
-  <ms-modal-base :header="modal.title" :content="modal.content"
-                 :is-modal-show="modal.isShow"
-                 :show-close-button="false"
-                 v-on:backdrop_click="closeModal"
-                 ref="modal1" footer-type="sao-yes-no"
-                 @confirm="modal.onYes"
-                 @cancel="modal.onNo"
+  <ms-modal-base :header="modalTitle" :content="modalContent"
+                 :is-modal-show="modalShow"
+                 :show-close-button="modalShowCloseButton"
+                 v-on:backdrop_click="modalOnCancel"
+                 ref="modal1" :footer-type="modalButtonType"
+                 @confirm="modalOnConfirm"
+                 @cancel="modalOnCancel"
+                 width="50%"
+                 :confirm-text="modalConfirmText"
+                 :cancel-text="modalCancelText"
   >
-<!--    <template v-slot:footer>-->
-<!--      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-secondary"-->
-<!--              @click="modal.onNo"-->
-<!--      >-->
-<!--        <i class="bi-x-lg"/>-->
-<!--        <span style="flex-grow: 1;">NO</span>-->
-<!--      </button>-->
-<!--      <button style="flex-grow: 1; display: flex; align-items: center" class="btn btn-danger"-->
-<!--              @click="modal.onYes"-->
-<!--      >-->
-<!--        <i class="bi-circle"/>-->
-<!--        <span style="flex-grow: 1">YES</span>-->
-<!--      </button>-->
-<!--    </template>-->
   </ms-modal-base>
 </template>
 <script>
 import appConfig from '@/config';
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapState, mapMutations } from 'vuex';
 import MSWindowTitleButton from '@/components/MSWindowTitleButton.vue';
 import MSModalBase from '@/components/MSModalBase.vue';
 
@@ -55,13 +44,18 @@ export default {
     'ms-window-title-button': MSWindowTitleButton,
     'ms-modal-base': MSModalBase,
   },
+  mounted() {
+    this.setGlobalModalRef(this.$refs.modal1)
+  },
   methods: {
     onLogoutButtonClick() {
-      this.modal.title = 'Logout';
-      this.modal.content = 'Are you sure to logging out from this server?';
-      this.modal.isShow = true;
-      this.modal.onNo = () => { this.closeModal(); };
-      this.modal.onYes = () => { this.onLogout(); };
+      this.showGlobalModal({
+        title: 'Logout',
+        content: 'Are you sure to logging out from this server?',
+        onConfirm: this.onLogout,
+        onCancel: this.closeModal,
+        buttonType: 'sao-yes-no',
+      });
     },
     async onLogout() {
       await this.closeModal();
@@ -71,38 +65,15 @@ export default {
       }, 300);
     },
     closeModal() {
-      return this.$refs.modal1.hideModalBody().then(() => new Promise((resolve) => {
-        setTimeout(() => {
-          this.modal.isShow = false;
-          resolve();
-        }, 500);
-      }));
-      // return new Promise((resolve) => {
-      //   if (this.modal.isAnimating) {
-      //     resolve();
-      //     return;
-      //   }
-      //   this.modal.isAnimating = true;
-      //   this.$refs.modal1.isModalBodyVisible = false;
-      //   setTimeout(() => {
-      //     this.modal.isShow = false;
-      //     this.modal.isAnimating = false;
-      //     resolve();
-      //   }, 500);
-      // });
+      return this.hideGlobalModal();
     },
     ...mapActions('UserInfo', ['logout']),
+    ...mapActions('GlobalModal', ['showGlobalModal', 'hideGlobalModal']),
+    ...mapMutations('GlobalModal', ['setGlobalModalRef']),
   },
   data() {
     return {
-      modal: {
-        isShow: false,
-        isAnimating: false,
-        title: '',
-        content: '',
-        onNo: () => {},
-        onYes: () => {},
-      },
+
     };
   },
   computed: {
@@ -110,6 +81,18 @@ export default {
       return !appConfig.isWeb;
     },
     ...mapGetters(['showTitleBar', 'windowTitle']),
+    ...mapState('GlobalModal', {
+      modalShow: (state) => state.show,
+      modalTitle: (state) => state.title,
+      modalContent: (state) => state.content,
+      modalShowCloseButton: (state) => state.showCloseButton,
+      modalButtonType: (state) => state.buttonType,
+      modalOnConfirm: (state) => state.onConfirm,
+      modalOnCancel: (state) => state.onCancel,
+      modalConfirmText: (state) => state.confirmText,
+      modalCancelText: (state) => state.cancelText,
+      modalModalRef: (state) => state.modalRef,
+    }),
   },
 };
 </script>

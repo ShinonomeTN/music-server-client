@@ -3,12 +3,12 @@ import { createStore } from 'vuex';
 import appConfig from '@/config';
 import {
   navBarAdministrationSection,
-  navBarItem,
   navBarPublicSection,
   navBarSection,
 } from '@/providers/nav-bar-factory';
 import ServerInfo from './modules/server-info';
 import UserInfo from './modules/user-info';
+import GlobalModal from './modules/global-modal';
 
 export default createStore({
   state: {
@@ -48,7 +48,7 @@ export default createStore({
     },
   },
   actions: {
-    async configureNavBar({ store, commit }) {
+    async configureNavBar({ commit }) {
       const sections = [...navBarPublicSection()];
       sections.push(navBarSection('music-note-list', 'Playlists'));
 
@@ -59,5 +59,6 @@ export default createStore({
   modules: {
     ServerInfo,
     UserInfo,
+    GlobalModal,
   },
 });

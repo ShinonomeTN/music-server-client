@@ -77,7 +77,7 @@ export default {
         return { message: 'session_refresh_success' };
       }
 
-      const token = await api.refreshToken().then(({ data }) => data.token);
+      const token = await api.refreshToken(state.accessToken).then(({ data }) => data.token);
       commit('setAccessToken', token);
       commit('refreshSessionRenewTime');
       return { message: 'token_refresh_success' };

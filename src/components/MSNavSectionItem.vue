@@ -1,7 +1,7 @@
 <template>
   <button @click="onClick" class="ms-nav-item" :class="[{ 'active' : isActive }]">
     <i v-if="icon" style="padding: 0.5rem 1rem 0.5rem 0" :class="[`bi-${icon}`]" />
-    <span>{{ title }}</span>
+    <span style="white-space: nowrap">{{ title }}</span>
   </button>
 </template>
 
