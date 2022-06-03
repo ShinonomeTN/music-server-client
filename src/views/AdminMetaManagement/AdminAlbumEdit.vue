@@ -272,7 +272,7 @@ Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'
         const tracks = album.disks.mapIndexed((disk, index) => disk.tracks.map((track) => ({
           track,
           diskId: index + 1,
-        })));
+        }))).flatten();
 
         if (tracks.isEmpty()) { progress(100); return; }
         title('Creating tracks');
@@ -287,7 +287,7 @@ Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'
               .mapNotNull((artist) => artists.firstMatch((exists) => buildArtistKey(artist) === buildArtistKey(exists)))
               .map((artist) => artist.id),
             diskNumber: diskId,
-            trackNumber: track.trackNumber,
+            trackNumber: track.index,
             albumId: album.id,
           }).then((data) => data.track)).id;
           count++;
