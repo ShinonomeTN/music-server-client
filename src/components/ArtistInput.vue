@@ -10,14 +10,17 @@
     <ms-backdrop :z-index="zIndex - 1" :show="showDisAmbiguous" mode="light-glass" @click="showDisAmbiguous = false; selectedIndex = null" />
 
     <div class="input-form" style="flex-grow: 1;">
-      <ms-tag-input style="margin-left: 4px; height: 100%" :tag-object-list="artists" placeholder="Input artist name, confirm with Enter."
+      <ms-tag-input style="margin-left: 4px; height: 100%" :tag-object-list="modelValue" placeholder="Input artist name, confirm with Enter."
                     @submit="onAddArtist" @delete="onTryDeleteArtist"
       >
         <template v-slot:tagList="{ item, key }">
-          <avatar-with-name-tag style="margin: 3px 0"
-                                :class="classOfItem(item, key)" :disabled="item.loading" :title="item.name"
-                                @close="onArtistDelete(key)"
-                                @click="showDisAmbiguousOptions(key)"
+          <avatar-with-name-tag
+            style="margin-top: 3px; margin-bottom: 3px"
+            :image="coverArtOfArtistAt(key)"
+            :class="classOfItem(item, key)" :disabled="loadingStateOf(key)" :title="item.name"
+            @close="onArtistDelete(key)"
+            @click="showDisAmbiguousOptions(key)"
+            @created="loadArtistInfo(key,{ artist: item })"
           />
         </template>
         <template v-slot:tailing>
@@ -28,13 +31,21 @@
 
     <div class="dis-ambiguous" v-if="showDisAmbiguous">
       <div v-if="alternativeList.isEmpty()" style="padding: 1rem; font-style: italic">
-        <span>No artist match name '{{artists[selectedIndex].name}}'.</span>
+        <span>No artist matches name '{{modelValue[selectedIndex].name}}'.</span>
       </div>
       <div v-else style="border-bottom: lightgray solid 1px; margin-bottom: 5px">
+        <div style="border-bottom: lightgray solid 1px">
+          <div v-if="alternativeList.length > 1" style="padding: 1rem; font-style: italic">
+            <span>Which '{{modelValue[selectedIndex].name}}' ?</span>
+          </div>
+          <div v-else-if="alternativeList.length === 1" style="padding: 1rem; font-style: italic">
+            <span>Only one '{{modelValue[selectedIndex].name}}' matches result.</span>
+          </div>
+        </div>
         <div v-for="(item,index) in alternativeList" :key="index"
              class="artist-item"
              @click="onDisAmbiguousItem(item)"
-             :class="{ active: item.id === artists[selectedIndex].id }"
+             :class="{ active: item.id === modelValue[selectedIndex].id }"
         >
           <ms-image-view :src="coverArtUrlOf(item)" width="32px" height="32px" border-radius="4px">
             <template v-slot:empty-image>
@@ -61,15 +72,6 @@ import MSImageView from '@/components/MSImageView.vue';
 import MSBackdrop from '@/components/MSBackdrop.vue';
 import { nextTick } from 'vue';
 
-function mapArtists(item) {
-  return {
-    id: item.id,
-    name: item.name,
-    found: item.found,
-    ambiguous: item.ambiguous,
-  };
-}
-
 export default {
   name: 'ArtistInput',
   components: {
@@ -92,7 +94,7 @@ export default {
   emits: ['update:modelValue'],
   data() {
     return {
-      artists: [],
+      artistInfoCache: {},
       performDeleteItem: null,
       delay: $delay(1000, 'reject'),
       showDisAmbiguous: false,
@@ -100,26 +102,9 @@ export default {
     };
   },
   mounted() {
-    for (const artist of this.modelValue) {
-      const internalModal = {
-        id: artist.id,
-        name: artist.name,
-        image: null,
-        alternatives: [],
-        found: false,
-        ambiguous: false,
-        loading: true,
-      };
-      this.artists.push(internalModal);
-      nextTick(() => {
-        this.loadArtistInfo({ artist: internalModal });
-      });
-    }
+
   },
   methods: {
-    onUpdateArtist() {
-      this.value = this.artists.map(mapArtists);
-    },
     showDisAmbiguousOptions(index) {
       this.selectedIndex = index;
       this.showDisAmbiguous = true;
@@ -130,43 +115,46 @@ export default {
       selected.ambiguous = false;
       this.showDisAmbiguous = false;
       this.selectedIndex = null;
-
-      this.onUpdateArtist();
     },
     onAddArtist(input) {
       if (!input) return;
       const name = input.trim();
       if (name === '') return;
-      this.artists.push({
+
+      const artist = {
         id: null,
         name,
-        image: null,
-        alternatives: [],
         found: false,
         ambiguous: false,
+      };
+      const newList = [...this.value, artist];
+      this.value = newList;
+      this.artistInfoCache[newList.length - 1] = {
+        image: null,
+        alternatives: [],
         loading: true,
-      });
-      const artist = this.artists.last();
-      this.onUpdateArtist();
-
-      this.loadArtistInfo({ artist });
+      };
     },
-    async loadArtistInfo({ artist }) {
+    async loadArtistInfo(index, { artist }) {
+      console.log('Load artist info @', index, artist);
+      const info = this.cacheInfoOf(index);
+
       try {
-        const page = await api.artist_listAll({ name: artist.name });
-        if (page.empty) return;
-        const artists = page.content.map((item) => item.artist);
-        artist.alternatives.clear();
-        artist.alternatives.addAll(artists);
+        const { content } = await api.artist_listAll({ name: artist.name });
+        if (content.isEmpty()) {
+          artist.found = false;
+          artist.ambiguous = false;
+          return;
+        }
+        const artists = content.map((item) => item.artist);
+        info.alternatives.clear();
+        info.alternatives.addAll(artists);
 
         if (artist.id !== null) {
-          const matched = artists.find((result) => result.id === artist.id).first();
-          if (!matched) {
-            artist.ambiguous = true;
-            return;
-          }
+          const matched = artists.find((result) => result.id === artist.id);
+          if (!matched) { artist.found = false; return; }
           const [coverArt] = matched.coverArts;
-          if (coverArt) artist.image = api.config.coverArtUrlOf(coverArt.filePath);
+          if (coverArt) info.image = api.config.coverArtUrlOf(coverArt.filePath);
           return;
         }
 
@@ -175,32 +163,32 @@ export default {
         artist.found = true;
         artist.name = first.name;
         const [coverArt] = first.coverArts;
-        if (coverArt) artist.image = api.config.coverArtUrlOf(coverArt.filePath);
+        if (coverArt) info.image = api.config.coverArtUrlOf(coverArt.filePath);
         if (artists.length > 1) artist.ambiguous = true;
-
-        this.onUpdateArtist();
       } catch (e) {
         console.error('Could not load artist info:', e);
       } finally {
-        artist.loading = false;
+        // eslint-disable-next-line vue/valid-next-tick
+        await nextTick(() => { info.loading = false; });
       }
     },
     onArtistDelete(index) {
-      this.artists.delete(index);
-      this.onUpdateArtist();
+      this.$emit('update:modelValue', this.modelValue.filter((_, i) => i !== index));
+      this.artistInfoCache[index] = null;
     },
     onTryDeleteArtist() {
       console.log('try delete');
-      this.performDeleteItem = (this.artists.length - 1);
+      this.performDeleteItem = (this.modelValue.length - 1);
       const result = this.delay.do(() => {
         this.performDeleteItem = null;
         console.log('restore color');
       });
+
       if (!result) {
+        const { performDeleteItem } = this;
         this.delay.cancel();
-        this.artists.delete(this.performDeleteItem);
+        this.onArtistDelete(performDeleteItem);
         this.performDeleteItem = null;
-        this.onUpdateArtist();
       }
     },
     coverArtUrlOf(item) {
@@ -208,13 +196,33 @@ export default {
       if (!first) return null;
       return api.config.coverArtUrlOf(first.filePath);
     },
+    coverArtOfArtistAt(index) {
+      return this.cacheInfoOf(index).image;
+    },
+    cacheInfoOf(index) {
+      let infoCache = this.artistInfoCache[index];
+      if (!infoCache) {
+        infoCache = {
+          image: null,
+          alternatives: [],
+          loading: true,
+        };
+        this.artistInfoCache[index] = infoCache;
+      }
+      return infoCache;
+    },
+    loadingStateOf(index) {
+      return this.cacheInfoOf(index).loading;
+    },
     classOfItem(item, index) {
+      const infoCache = this.artistInfoCache[index] || { loading: false };
+      const { performDeleteItem } = this;
       return {
-        'bg-secondary': item.loading,
-        'bg-danger': (index === this.performDeleteItem) && !item.loading,
-        'bg-success': item.found && !item.loading && (index !== this.performDeleteItem),
-        'bg-warning': !item.found && !item.loading && (index !== this.performDeleteItem),
-        'bg-info': (item.found && item.ambiguous && !item.loading) && (index !== this.performDeleteItem),
+        'bg-secondary': infoCache.loading,
+        'bg-danger': (index === performDeleteItem) && !infoCache.loading,
+        'bg-success': item.found && !infoCache.loading && (index !== performDeleteItem),
+        'bg-warning': !item.found && !infoCache.loading && (index !== performDeleteItem),
+        'bg-info': (item.found && item.ambiguous && !infoCache.loading) && (index !== performDeleteItem),
         'avatar-with-name-tag-active': index === this.selectedIndex,
       };
     },
@@ -223,7 +231,9 @@ export default {
     alternativeList() {
       const { selectedIndex } = this;
       if (selectedIndex === null) return [];
-      return this.artists[selectedIndex].alternatives;
+      const info = this.artistInfoCache[selectedIndex];
+      if (!info) return [];
+      return info.alternatives;
     },
     componentHeight() {
       return `${this.$refs.container.clientHeight}px`;

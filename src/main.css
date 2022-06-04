@@ -176,7 +176,6 @@ input.ms-input-no-style:focus + div.input-decorator.line-bottom {
     top: 0;
     bottom: 0;
     height: 100%;
-    flex-direction: column;
     min-height: 0;
     position: absolute;
 }
@@ -209,6 +208,7 @@ input.ms-input-no-style:focus + div.input-decorator.line-bottom {
     background: none;
     font-weight: bold;
     border-radius: 5px;
+    font-size: smaller;
 }
 
 .ms-nav-item.active {

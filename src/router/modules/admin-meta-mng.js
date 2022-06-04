@@ -6,6 +6,7 @@ export default [
     component: () => import('@/views/AdminMetaManagement/AdminMetaManagement.vue'),
     meta: {
       requireScrollY: true,
+      navSection: 'AdminMetaManagement',
     },
     children: [
       {
@@ -14,6 +15,7 @@ export default [
         component: () => import('@/views/AdminMetaManagement/AdminRecentMetaView.vue'),
         meta: {
           requireRelative: true,
+          navSection: 'AdminMetaManagement',
         },
       },
       {
@@ -25,12 +27,13 @@ export default [
         },
       },
       {
-        path: 'album/[albumId]',
+        path: 'album/:albumId',
         name: 'AdminAlbumEdit',
         component: () => import('@/views/AdminMetaManagement/AdminAlbumEdit.vue'),
         props: true,
         meta: {
           requireRelative: true,
+          navSection: 'AdminMetaManagement',
         },
       },
     ],

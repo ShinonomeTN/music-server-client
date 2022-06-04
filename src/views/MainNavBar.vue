@@ -43,7 +43,7 @@ export default {
   components: {
     'ms-nav-section-header': MSNavSectionHeader,
     'ms-nav-section-item': MSNavSectionItem,
-    'ms-image-view' : MSImageView
+    'ms-image-view': MSImageView,
   },
   data() {
     return {

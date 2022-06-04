@@ -11,6 +11,7 @@ import ArtistRoutes from './modules/artist-routes';
 import AlbumRoutes from './modules/album-routes';
 import TrackRoutes from './modules/track-routes';
 import AdminMetaManagementRoute from './modules/admin-meta-mng';
+import AdminServerStatus from './modules/admin-server-status';
 
 const routes = [
   {
@@ -28,6 +29,7 @@ const routes = [
       ...AlbumRoutes,
       ...TrackRoutes,
       ...AdminMetaManagementRoute,
+      ...AdminServerStatus,
     ],
   },
   {
@@ -64,9 +66,9 @@ function computeNavBarActivationKey(to) {
   if (!matched.isEmpty()) {
     const [first, second] = matched;
     const selected = (second || first);
-    console.info('Route:', selected);
-    const { name } = selected;
-    if (name) key = `route_name:${selected.name}`;
+    const { meta } = selected || {};
+    const name = meta.navSection || selected.name;
+    if (name) key = `route_name:${name}`;
   }
   store.commit('setNavBarActivationKey', key);
 }

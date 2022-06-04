@@ -23,7 +23,7 @@
         <div class="ms-2 me-3" style="display: flex">
           <artist-input style="flex-grow: 1" v-model="album.artists" popup-position="bottom">
             <template v-slot:tailing>
-              <button class="ms-2 btn btn-primary btn-sm m-1">
+              <button class="ms-2 btn btn-primary btn-sm m-1" @click="fillTrackArtists">
                 <span>Use track artists</span>
               </button>
             </template>
@@ -160,6 +160,32 @@ export default {
   },
   methods: {
     ...mapActions('GlobalModal', ['showGlobalModal', 'hideGlobalModal']),
+    async fillTrackArtists() {
+      const artists = this.album.disks.flatMap((disk) => disk.tracks)
+        .flatMap((track) => track.artists)
+        .distinctBy((artist) => buildArtistKey(artist));
+
+      if (this.album.artists.isNotEmpty()) {
+        const result = await new Promise((resolve) => {
+          this.showGlobalModal({
+            title: 'Replace artists with tracks\' artists',
+            content: `
+          Would you want to use those artists as album artists? <br/>
+          ${artists.map((artist) => artist.name).join(' ,')}
+          `,
+            onCancel: () => this.hideGlobalModal().then(() => resolve(false)),
+            onConfirm: () => this.hideGlobalModal().then(() => resolve(true)),
+            showCloseButton: false,
+            buttonType: 'sao-yes-no',
+          });
+        });
+
+        if (!result) return;
+      }
+
+      this.album.artists.clear();
+      this.album.artists.addAll(artists);
+    },
     onAddDisk() {
       this.album.disks.push({
         tracks: [],
@@ -195,7 +221,7 @@ Are you sure to delete disk ${diskIndex + 1} ?
       this.showGlobalModal({
         title: 'Delete track',
         content: `
-Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'} (at disk ${diskIndex + 1}, index ${trackIndex + 1})?
+Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'} (at disk ${diskIndex + 1}, index ${track.index})?
 <br/> Track data will be deleted. This operation cannot be reverted.
 `.trim(),
         onConfirm: () => { this.hideGlobalModal(); this.album.disks[diskIndex].tracks.delete(trackIndex); },

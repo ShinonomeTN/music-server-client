@@ -22,7 +22,7 @@ import MSImageView from '@/components/MSImageView.vue';
 
 export default {
   name: 'ArtistAvatarWithNameTag',
-  emits: ['close', 'click'],
+  emits: ['close', 'click', 'created'],
   components: {
     'ms-image-view': MSImageView,
   },
@@ -34,8 +34,8 @@ export default {
     },
     disabled: Boolean,
   },
-  mounted() {
-
+  created() {
+    this.$emit('created')
   },
   methods: {
     onCloseClick() {

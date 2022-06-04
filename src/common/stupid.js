@@ -47,6 +47,15 @@ copyPropertiesTo(Array.prototype, {
   flatten() {
     return this.flatMap((item) => item);
   },
+  groupBy(keyProvider) {
+    const map = {};
+    for (const item of this) {
+      const key = keyProvider(item);
+      if (!map[key]) map[key] = [];
+      map[key].push(item);
+    }
+    return map;
+  },
   /**
    * Distinct items
    * @return Array(*)

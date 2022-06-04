@@ -96,6 +96,8 @@ export default {
         backgroundColor: this.backgroundColor || 'gray',
         width: stringOrDefault(this.width, '24px'),
         height: stringOrDefault(this.height, '24px'),
+        minWidth: stringOrDefault(this.width, '24px'),
+        minHeight: stringOrDefault(this.height, '24px'),
         'border-radius': `${this.rounded ? '50%' : stringOrDefault(this.borderRadius, '0')}!important`,
       };
     },

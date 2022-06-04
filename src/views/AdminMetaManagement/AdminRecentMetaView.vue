@@ -1,22 +1,21 @@
 <template>
-  <div style="flex-grow: 1">
-    <div class="flex-column align-items-center">
-      <ms-nav-section-header style="font-size: medium" icon="collection-fill" title="Recent Albums" />
-      <div style="overflow-y: hidden; overflow-x: scroll; display: flex; padding: 1rem 0">
-        <button-card class="m-1" text="New Album" size="200px" style="background: whitesmoke"
-                     @click="$router.push({ name: 'AdminAlbumCreate'})"
-        />
-        <album-card class="m-1" v-for="(item) in recentAlbums" :key="item.album.id" :album="item.album"
-                    width="200px" style="height: 200px; min-height: 200px; display: inline-block"
-        />
-      </div>
+  <div>
+    <ms-nav-section-header style="font-size: medium" icon="collection-fill" title="Recent Albums" />
+    <div style="padding: 10pt 0; display: flex; white-space: nowrap; overflow-x: scroll; overflow-y: hidden">
+      <button-card class="m-1" text="New Album" size="150px" style="background: whitesmoke; display: inline-block"
+                   @click="$router.push({ name: 'AdminAlbumCreate'})"
+      />
+      <album-card class="m-1" v-for="(item) in recentAlbums" :key="item.album.id" :album="item.album"
+                  size="150px" style="display: inline-block"
+      />
     </div>
-    <div class="flex-column align-items-center">
-      <ms-nav-section-header style="font-size: medium" icon="person-square" title="Recent Artists" />
-      <div style="overflow-y: hidden; overflow-x: scroll; display: flex; padding: 1rem 0">
-        <button-card class="m-1" text="New Artist" size="200px" style="background: whitesmoke"></button-card>
-        <artist-card class="m-1" v-for="(item) in recentArtist" :key="item.artist.id" :artist="item.artist" size="200px"/>
-      </div>
+    <ms-nav-section-header style="font-size: medium" icon="person-square" title="Recent Artists" />
+    <div style="overflow-y: hidden; overflow-x: scroll; padding: 1rem 0; white-space: nowrap">
+      <button-card class="m-1" text="New Artist" size="150px" style="background: whitesmoke; display: inline-block"
+      ></button-card>
+      <artist-card class="m-1" v-for="(item) in recentArtist" :key="item.artist.id" :artist="item.artist" size="150px"
+                   style="display: inline-block"
+      />
     </div>
   </div>
 </template>

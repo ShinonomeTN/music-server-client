@@ -3,7 +3,7 @@
   <ms-backdrop :z-index="zIndex - 50" :show="showDrawer" mode="light-glass" @click="showDrawer = false;" />
   <div class="input-form">
     <ms-input style="min-width: 1rem; max-width: 2rem; margin: 0 1rem; text-align: center; height: 100%; overflow: hidden"
-              :model-value="trackIndex" @update:modalValue="$emit('update:trackIndex', $event)" :size="3"
+              v-model="trackIndexValue"
               input-type="text" max-length="3"
               placeholder="Index"
     />
@@ -156,6 +156,14 @@ export default {
         this.$emit('update:title', value);
       },
     },
+    trackIndexValue: {
+      get() {
+        return this.trackIndex
+      },
+      set(value) {
+        this.$emit('update:trackIndex', value)
+      }
+    }
   },
 };
 </script>

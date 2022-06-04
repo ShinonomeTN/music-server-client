@@ -97,7 +97,7 @@ export default {
 
 }
 
-.ms-tag-input .tag-list > div:not(:first-child) {
+.ms-tag-input .tag-list > *:not(:first-child) {
   margin-left: 2px;
 }
 

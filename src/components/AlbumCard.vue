@@ -2,7 +2,7 @@
   <div class="ms-card ms-album-card" :style="sizeStyles">
     <ms-image-view style="width: inherit; height: inherit" :src="coverArt">
       <template v-slot:empty-image>
-        <div class="view-absolute flex-column justify-content-center align-items-center">
+        <div class="view-absolute" style="display: flex; justify-content: center; align-items: center">
           <i class="bi-collection-fill" style="color: var(--bs-light); font-size: 32px"></i>
         </div>
       </template>
@@ -27,7 +27,7 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    width: {
+    size: {
       type: String,
       default: '100pt',
     },
@@ -55,10 +55,12 @@ export default {
     },
     sizeStyles() {
       return {
-        width: this.width,
-        minWidth: this.width
-      }
-    }
+        width: this.size,
+        minWidth: this.size,
+        height: this.size,
+        minHeight: this.size,
+      };
+    },
   },
 };
 </script>

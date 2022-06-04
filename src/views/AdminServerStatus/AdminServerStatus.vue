@@ -9,9 +9,8 @@
 </template>
 
 <script>
-
 export default {
-  name: 'AdminMetaManagement',
+  name: 'AdminServerStatus',
 };
 </script>
 

@@ -163,6 +163,12 @@ export default {
     )).then(({ data }) => data);
   },
 
+  album_get(id) {
+    return $axios(getRequest(
+      composeRequestUrl(`api/meta/album/${id}`),
+    )).then(({ data }) => data);
+  },
+
   album_create({ title, artistIds, coverArtIds }) {
     const query = new URLSearchParams({ title });
     artistIds.forEach((item) => query.append('albumArtistId', `${item}`));
@@ -184,6 +190,11 @@ export default {
     return $axios(postRequest(composeRequestUrl('api/meta/artist'), {
       data: query,
     })).then(({ data }) => data);
+  },
+
+  album_tracks(albumId) {
+    return $axios(getRequest(composeRequestUrl(`api/meta/album/${albumId}/track`)))
+      .then(({ data }) => data);
   },
 
   /** @return { Page } track page query result */

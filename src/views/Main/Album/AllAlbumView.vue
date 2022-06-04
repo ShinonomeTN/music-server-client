@@ -1,18 +1,11 @@
 <template>
-<!--  <div style="position: relative; flex-grow: 1">-->
-<!--    <div v-if="page.isLoading" class="flex-column justify-content-center align-items-center">-->
-<!--      <div class="spinner-border p-3" style="width: 32px; height: 32px"></div>-->
-<!--      <div style="font-size: larger">Loading</div>-->
-<!--    </div>-->
-<!--    -->
-<!--  </div>-->
   <div class="ms-safe-area-margin masked-overflow view-absolute"
        style="overflow-x: hidden; display: flex;"
   >
     <div style="display: flex;flex-wrap: wrap;place-content: flex-start">
-      <album-card style="height: 200px" width="200px"
-                  class="m-2"
+      <album-card size="150px" class="m-2"
                   v-for="(item, index) in page.content" :key="index" :album="item.album"
+                  @click="$router.push({ name: 'AlbumView', params: { albumId: item.album.id } })"
       />
     </div>
   </div>
