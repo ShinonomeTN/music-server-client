@@ -20,7 +20,7 @@
             <artist-input style="flex-grow: 1" v-model="album.artists" popup-position="bottom">
               <template v-slot:tailing>
                 <button class="ms-2 btn btn-primary btn-sm m-1" @click="fillTrackArtists">
-                  <span>Use track artists</span>
+                  <span style="white-space: nowrap">Use track artists</span>
                 </button>
               </template>
             </artist-input>

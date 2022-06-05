@@ -8,9 +8,9 @@
       </div>
     </template>
   </ms-image-view>
-  <div class="ms-2 me-2" style="flex-grow: 1">{{ title }}</div>
+  <div class="ms-2 me-2" style="flex-grow: 1; white-space: nowrap">{{ title }}</div>
   <button class="btn-close"
-          style="margin: 5px; width: 5px; height: 5px; outline: none"
+          style="margin: 5px; width: 5px; height: 5px; outline: none;"
           tabindex="-1"
           @click="onCloseClick" :disabled="disabled"
   />

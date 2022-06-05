@@ -9,7 +9,7 @@ module.exports = defineConfig({
     },
   },
   devServer: {
-    proxy: 'http://192.168.1.153:8054',
+    proxy: 'https://audio.derjager.work',
   },
   transpileDependencies: true,
   chainWebpack: (config) => {

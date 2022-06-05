@@ -2,6 +2,8 @@
   <div class="view-fixed" style="display: flex;">
     <div class="main-navbar ms-safe-area-margin">
       <main-nav-bar/>
+      <div style="flex-grow: 1"></div>
+      <player-view />
     </div>
     <div class="main-content ms-safe-area-margin"
          :class="[{'child-require-flex': childRequireFlex},
@@ -22,11 +24,13 @@
 <script>
 import MainNavBar from '@/views/MainNavBar.vue';
 import { mapActions, mapGetters } from 'vuex';
+import PlayerView from '@/views/Player/PlayerView.vue';
 
 export default {
   name: 'HomeView',
   components: {
     MainNavBar,
+    PlayerView,
   },
   mounted() {
     this.initData();
@@ -80,6 +84,8 @@ export default {
   transition: width 0.3s;
   overflow: hidden;
   overflow-y: scroll;
+  display: flex;
+  flex-flow: column;
 }
 
 .main-content {

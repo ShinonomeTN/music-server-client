@@ -121,15 +121,19 @@ export default {
   },
   methods: {
     async initFetchServerInfo() {
-      if (this.serverInfo == null) {
-        try {
-          await this.updateServerInfo();
-        } catch (e) {
-          console.warn('Could not fetch server info.', e);
-          this.stage = 'input_server_info';
-        }
+      this.stage = 'fetching_server_info';
+      if (!this.serverUrl) {
+        this.stage = 'input_server_info';
+        return;
       }
-      this.stage = 'show_server_info';
+
+      try {
+        await this.updateServerInfo();
+        this.stage = 'show_server_info';
+      } catch (e) {
+        console.warn('Could not fetch server info.', e);
+        this.stage = 'input_server_info';
+      }
     },
 
     async onStartAccess() {
@@ -140,7 +144,7 @@ export default {
         console.debug('Got server config: ', serverConfig);
         this.stage = 'show_server_info';
       } catch (e) {
-        console.warn('Could not get server info: ', e)
+        console.warn('Could not get server info: ', e);
         this.inputServerInfoStage.serverAddress.error = {
           message: 'Target server is not a Music Server Instance.',
         };
