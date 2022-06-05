@@ -5,7 +5,7 @@ import appConfig from '@/config';
 export default {
   namespaced: true,
   state: {
-    serverInfo: null,
+    serverInfo: {},
     serverUrl: api.config.storage.serverUrl,
   },
   getters: {

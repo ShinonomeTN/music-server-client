@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'AdminServerInformation',
@@ -15,14 +15,16 @@ export default {
 
     };
   },
-  mounted() {
-
+  async mounted() {
+    await this.updateServerInfo();
   },
   methods: {
-
+    ...mapActions('ServerInfo', ['updateServerInfo']),
   },
   computed: {
-    name() { return this.serverInfo.name || this.serverInfo.host },
+    name() {
+      return this.serverInfo.name || this.serverInfo.host;
+    },
     ...mapGetters('ServerInfo', ['serverInfo']),
   },
 };

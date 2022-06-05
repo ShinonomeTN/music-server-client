@@ -204,27 +204,32 @@ export default {
 
     };
   },
-  mounted() {
-    if (this.isEditMode) {
-      this.album.isLoading = true;
-      this.initData();
-    }
+  async mounted() {
+    if (this.isEditMode) { await this.initData(); }
+    this.album.didChanged = false;
   },
-  beforeRouteLeave(to, from, next) {
-    // eslint-disable-next-line no-return-await
-    if (!this.album.didChanged) next();
-    this.showGlobalModal({
-      title: 'Leave without saving',
-      content: 'Would you want to leave? All changes will be discarded.',
-      buttonType: 'sao-yes-no',
-      confirmText: 'YES',
-      cancelText: 'NO',
-      onConfirm: () => this.hideGlobalModal()
-        .then(() => next()),
-      onCancel: () => this.hideGlobalModal()
-        .then(() => next(false)),
-    });
-  },
+  // async beforeRouteLeave(to, from, next) {
+  //   // eslint-disable-next-line no-return-await
+  //   if (!this.album.didChanged) next();
+  //
+  //   const result = await new Promise((resolve) => {
+  //     this.showGlobalModal({
+  //       title: 'Leave without saving',
+  //       content: 'Would you want to leave? All changes will be discarded.',
+  //       buttonType: 'sao-yes-no',
+  //       confirmText: 'YES',
+  //       cancelText: 'NO',
+  //       onConfirm: () => this.hideGlobalModal()
+  //         .then(() => resolve(true)),
+  //       onCancel: () => this.hideGlobalModal()
+  //         .then(() => resolve(false)),
+  //     });
+  //   });
+  //
+  //   if (!result) { next(false); return; }
+  //
+  //   next();
+  // },
   methods: {
     async initData() {
       this.album.isLoading = true;
@@ -275,7 +280,6 @@ export default {
       } finally {
         this.album.isLoading = false;
       }
-      this.album.didChanged = false;
     },
 
     ...mapActions('GlobalModal', ['showGlobalModal', 'hideGlobalModal']),
