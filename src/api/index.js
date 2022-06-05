@@ -131,7 +131,7 @@ export default {
   },
 
   fetchCurrentServerInfo() {
-    return $axios(getRequest('.music_server.json'));
+    return $axios(getRequest(composeRequestUrl('.music_server.json')));
   },
 
   fetchRemoteUserInfo() {

@@ -2,8 +2,6 @@ import api from '@/api';
 import { $native } from '@/common/native';
 import appConfig from '@/config';
 
-console.log(api);
-
 export default {
   namespaced: true,
   state: {

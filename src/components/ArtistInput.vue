@@ -137,7 +137,6 @@ export default {
       };
     },
     async loadArtistInfo(index, { artist }) {
-      console.log('Load artist info @', index, artist);
       const info = this.cacheInfoOf(index);
 
       try {

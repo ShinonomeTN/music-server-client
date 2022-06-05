@@ -98,7 +98,8 @@
       "no-useless-call": "warn",
       "no-loop-func": "off",
       "no-empty": "warn",
-      "no-extra-boolean-cast": "off"
+      "no-extra-boolean-cast": "off",
+      "no-return-await": "off"
     }
   },
   "browserslist": [
