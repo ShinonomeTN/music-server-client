@@ -24,6 +24,7 @@ export default [
         component: () => import('@/views/AdminMetaManagement/AdminAlbumEdit.vue'),
         meta: {
           requireFlex: true,
+          navSection: 'AdminMetaManagement',
         },
       },
       {
@@ -32,7 +33,7 @@ export default [
         component: () => import('@/views/AdminMetaManagement/AdminAlbumEdit.vue'),
         props: true,
         meta: {
-          requireRelative: true,
+          requireFlex: true,
           navSection: 'AdminMetaManagement',
         },
       },

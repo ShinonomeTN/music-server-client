@@ -36,6 +36,9 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginView,
+    props: (route) => ({
+      continue: route.query.continue,
+    }),
     meta: {
       guestView: true,
     },
@@ -55,8 +58,11 @@ const router = createRouter({
   routes,
 });
 
-function handleLoginCheck(meta, from, next) {
-  if (!store.getters['UserInfo/didLoggedIn'] && from.name !== 'Login') return next({ name: 'Login' });
+function handleLoginCheck(meta, to, from, next) {
+  if (!store.getters['UserInfo/didLoggedIn'] && from.name !== 'Login') {
+    console.log('Redirect to login:', to);
+    return next({ name: 'Login', query: { continue: to.path } });
+  }
   return next();
 }
 
@@ -80,7 +86,7 @@ router.beforeEach((to, from, next) => {
   const { guestView, title } = meta;
   store.commit('setTitle', title || 'Music Server Management');
   if (guestView) return next();
-  return handleLoginCheck(meta, from, next);
+  return handleLoginCheck(meta, to, from, next);
 });
 
 export default router;

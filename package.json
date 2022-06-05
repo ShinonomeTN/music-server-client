@@ -96,7 +96,9 @@
       "template-curly-spacing" : "warn",
       "no-useless-return": "warn",
       "no-useless-call": "warn",
-      "no-loop-func": "off"
+      "no-loop-func": "off",
+      "no-empty": "warn",
+      "no-extra-boolean-cast": "off"
     }
   },
   "browserslist": [

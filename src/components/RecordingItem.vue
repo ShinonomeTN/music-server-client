@@ -18,7 +18,7 @@
       </div>
       <input class="ms-input-no-style flex-grow-1" style="padding-left: 10px" :value="locationDecoded"
              @input="onLocationUpdate($event.target.value)"/>
-      <button class="btn btn-danger btn-sm m-1" style="flex-grow: 0">
+      <button class="btn btn-danger btn-sm m-1" style="flex-grow: 0" @click="$emit('delete')">
         <i class="bi-trash-fill" />
       </button>
     </div>
@@ -42,7 +42,7 @@ export default {
       default: 'ORANGE%20RANGE%20-%20SUSHI%E9%A3%9F%E3%81%B9%E3%81%9F%E3%81%84%20feat.%20%E3%82%BD%E3%82%A4%E3%82%BD%E3%83%BC%E3%82%B9.mp3',
     },
   },
-  emits: ['update:server', 'update:protocol', 'update:location'],
+  emits: ['update:server', 'update:protocol', 'update:location', 'delete'],
   methods: {
     onLocationUpdate(value) {
       this.$emit('update:location', encodeURI(value));

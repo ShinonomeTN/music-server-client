@@ -35,6 +35,7 @@ import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'LoginView',
+  props: ['continue'],
   components: {
     ServerAddressLoginForm,
     UsernamePasswordLoginForm,
@@ -56,7 +57,8 @@ export default {
         await this.fetchRemoteUserInfo();
         this.stage = 'logged_in_welcome';
         setTimeout(() => {
-          this.$router.push({ name: 'Home' });
+          const c = this.continue;
+          if (c && !(c in ['/login', '', '/'])) this.$router.push(c); else this.$router.push({ name: 'Home' });
         }, 1000);
       } catch (e) {
         console.warn('Could not get user info.', e);

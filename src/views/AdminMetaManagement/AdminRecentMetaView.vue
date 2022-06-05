@@ -5,8 +5,8 @@
       <button-card class="m-1" text="New Album" size="150px" style="background: whitesmoke; display: inline-block"
                    @click="$router.push({ name: 'AdminAlbumCreate'})"
       />
-      <album-card class="m-1" v-for="(item) in recentAlbums" :key="item.album.id" :album="item.album"
-                  size="150px" style="display: inline-block"
+      <album-card class="m-1" v-for="({ album }) in recentAlbums" :key="album.id" :album="album"
+                  size="150px" style="display: inline-block" @click="$router.push({ name: 'AdminAlbumEdit', params: { albumId : album.id }})"
       />
     </div>
     <ms-nav-section-header style="font-size: medium" icon="person-square" title="Recent Artists" />

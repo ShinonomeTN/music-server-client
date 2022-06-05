@@ -38,6 +38,10 @@
                         v-model:server="item.server"
                         v-model:protocol="item.protocol"
                         v-model:location="item.location"
+                        @delete="onDeleteRecording(index, item)"
+                        @update:server="this.$emit('updateRecording', { target: item })"
+                        @update:protocol="this.$emit('updateRecording', { target: item })"
+                        @update:location="this.$emit('updateRecording', { target: item })"
         />
       </div>
       <div style="padding: 0 5px">
@@ -73,7 +77,10 @@ export default {
     RecordingItem,
     'ms-input': MSInput,
   },
-  emits: ['update:artists', 'update:title', 'update:recordings', 'update:trackIndex'],
+  emits: [
+    'update:artists', 'update:title', 'update:recordings', 'update:trackIndex',
+    'addRecording', 'deleteRecording', 'updateRecording',
+  ],
   props: {
     zIndex: [Number, String],
     title: String,
@@ -98,9 +105,11 @@ export default {
       const components = extractUrlComponents(this.recordingInput.trim());
       if (!components) return;
       this.recordingList.push(components);
-      this.didRecordingUpdate();
+      this.$emit('update:recordings', [...this.recordings, components]);
+      this.$emit('addRecording', { recording: components });
       this.recordingInput = '';
       const { location } = components;
+
       // Filename auto-complete
       if (location && location !== '' && (!this.title || this.title === '')) {
         const last = location.split('/').last().trim(); if (last === '') return;
@@ -108,8 +117,9 @@ export default {
         this.$emit('update:title', decodeURIComponent(filename));
       }
     },
-    didRecordingUpdate() {
-      this.$emit('update:recordings', this.recordingList);
+    onDeleteRecording(index, recording) {
+      this.$emit('update:recordings', this.recordings.filter((_, i) => i !== index));
+      this.$emit('deleteRecording', { index, target: recording });
     },
   },
   computed: {
@@ -158,12 +168,13 @@ export default {
     },
     trackIndexValue: {
       get() {
-        return this.trackIndex
+        return this.trackIndex;
       },
       set(value) {
-        this.$emit('update:trackIndex', value)
-      }
-    }
+        this.$emit('update:trackIndex', value);
+        this.$emit('updateTrackIndex', value)
+      },
+    },
   },
 };
 </script>

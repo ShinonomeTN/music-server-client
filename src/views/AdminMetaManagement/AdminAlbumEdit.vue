@@ -1,109 +1,120 @@
 <template>
-<div style="text-align: left; flex-grow: 1; display: flex; flex-flow: column">
-  <div class="p-3 ms-2" style="font-size: large; display: flex;">
-    <ms-input style="flex-grow: 1; align-items: center" v-model="album.title.value" placeholder="Album Title">
-      <template v-slot:leading>
-        <span v-if="albumId === null">Create</span>
-        <span v-else>Edit</span>
-        <span>&nbsp;</span>
-      </template>
-    </ms-input>
-    <span>&nbsp;</span>
-    <button style="font-size: medium" class="btn btn-success" @click="onSubmit">
-      <i class="bi-upload"/>
-      <span> Submit</span>
-    </button>
-  </div>
+<transition name="ani-switch" mode="out-in">
+  <div v-if="!isEditMode || (isEditMode && !album.isLoading)" style="text-align: left; flex-grow: 1; display: flex; flex-flow: column">
+    <div class="p-3 ms-2" style="font-size: large; display: flex;">
+      <ms-input style="flex-grow: 1; align-items: center" v-model="album.title.value" placeholder="Album Title">
+        <template v-slot:leading>
+          <span v-if="!isEditMode">Create</span>
+          <span v-else>Edit</span>
+          <span>&nbsp;</span>
+        </template>
+      </ms-input>
+      <span>&nbsp;</span>
+      <button style="font-size: medium" class="btn btn-success" @click="onSubmit">
+        <i class="bi-upload"/>
+        <span> Submit</span>
+      </button>
+    </div>
 
-  <div class="ms-flex-scrollable-container">
-    <div class="content-wrapper" style="overflow: hidden scroll">
-      <div class="content ms-2">
+    <div class="ms-flex-scrollable-container">
+      <div class="content-wrapper" style="overflow: hidden scroll">
+        <div class="content ms-2">
 
-        <ms-nav-section-header title="Album Artists" icon="person-square" style="font-size: smaller"/>
-        <div class="ms-2 me-3" style="display: flex">
-          <artist-input style="flex-grow: 1" v-model="album.artists" popup-position="bottom">
-            <template v-slot:tailing>
-              <button class="ms-2 btn btn-primary btn-sm m-1" @click="fillTrackArtists">
-                <span>Use track artists</span>
-              </button>
-            </template>
-          </artist-input>
-        </div>
-
-        <ms-nav-section-header title="Cover Arts" icon="images" style="font-size: smaller"/>
-        <div class="ms-2 me-3">
-          <cover-art-editor v-model="album.coverArts" image-size="100px"/>
-        </div>
-
-        <template v-for="(_ ,diskIndex) in album.disks" :key="diskIndex">
-          <div style="display: flex; align-items: center; margin-right: 6px;">
-            <ms-nav-section-header style="flex-grow: 1; font-size: smaller" :title="`Disk ${diskIndex + 1}`" icon="vinyl-fill"/>
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-sm btn-danger" @click="onDeleteDisk(diskIndex)">
-                <i class="bi-trash-fill" />
-                <span> Delete Disk</span>
-              </button>
-              <button class="btn btn-sm btn-success" @click="onAddTrack(diskIndex)">
-                <i class="bi-plus-lg" />
-                <span> Add Track</span>
-              </button>
-            </div>
+          <ms-nav-section-header title="Album Artists" icon="person-square" style="font-size: smaller"/>
+          <div class="ms-2 me-3" style="display: flex">
+            <artist-input style="flex-grow: 1" v-model="album.artists" popup-position="bottom">
+              <template v-slot:tailing>
+                <button class="ms-2 btn btn-primary btn-sm m-1" @click="fillTrackArtists">
+                  <span>Use track artists</span>
+                </button>
+              </template>
+            </artist-input>
           </div>
-          <track-input v-for="(track, trackIndex) in album.disks[diskIndex].tracks" :z-index="500" :key="trackIndex"
-                       v-model:artists="track.artists"
-                       v-model:title="track.title"
-                       v-model:recordings="track.recordings"
-                       v-model:trackIndex="track.index"
-                       style="margin-right: 5px"
-          >
-            <template v-slot:tailing>
-              <div style="margin: 5px" class="btn-group-sm btn-group">
-                <button class="btn btn-danger" @click="onDeleteTrack(diskIndex, trackIndex)">
+
+          <ms-nav-section-header title="Cover Arts" icon="images" style="font-size: smaller"/>
+          <div class="ms-2 me-3">
+            <cover-art-editor v-model="album.coverArts" image-size="100px"/>
+          </div>
+
+          <template v-for="(_ ,diskIndex) in album.disks" :key="diskIndex">
+            <div style="display: flex; align-items: center; margin-right: 6px;">
+              <ms-nav-section-header style="flex-grow: 1; font-size: smaller" :title="`Disk ${diskIndex + 1}`" icon="vinyl-fill"/>
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-sm btn-danger" @click="onDeleteDisk(diskIndex)">
                   <i class="bi-trash-fill" />
+                  <span> Delete Disk</span>
+                </button>
+                <button class="btn btn-sm btn-success" @click="onAddTrack(diskIndex)">
+                  <i class="bi-plus-lg" />
+                  <span> Add Track</span>
                 </button>
               </div>
-            </template>
-          </track-input>
-        </template>
-      </div>
-    </div>
-  </div>
-
-  <div class="m-3">
-    <div class="btn btn-success" style="width: 100%" @click="onAddDisk">
-      <i class="bi-plus-lg"/>
-      <span> Add Disk</span>
-    </div>
-  </div>
-
- <!-- Modal Area -->
-  <ms-modal-base ref="progressModal" :is-modal-show="progressModal.isShow" header="Saving Album"
-                 :show-close-button="false" width="50%"
-  >
-    <div class="m-2" style="display: flex; flex-flow: column">
-      <div class="m-2">{{progressModal.progressTitle}}</div>
-      <div class="m-2">
-        <div class="progress" style="height: 20px">
-          <div class="progress-bar progress-bar-striped"
-               :class="{'bg-danger' : progressModal.progressState === 'error',
-                        'bg-success': progressModal.progressState === 'finished',
-                        'progress-bar-animated' : progressModal.progressState === 'normal',
-                        }"
-               :style="{width: `${progressModal.progress}%`}"
-          ></div>
+            </div>
+            <track-input v-for="(track, trackIndex) in album.disks[diskIndex].tracks" :z-index="500" :key="trackIndex"
+                         v-model:artists="track.artists"
+                         v-model:title="track.title"
+                         v-model:recordings="track.recordings"
+                         v-model:trackIndex="track.index"
+                         style="margin-right: 5px"
+                         @addRecording="isEditMode && onAddRecording(track, $event)"
+                         @deleteRecording = "isEditMode && onDeleteRecording($event)"
+                         @updateRecording="isEditMode && onUpdateRecording(track ,$event.target)"
+                         @update:title="isEditMode && onUpdateTrackTitle(diskIndex, { track, value: $event })"
+                         @update:trackIndex="isEditMode && onUpdateTrackIndex(diskIndex, { track, value: $event })"
+            >
+              <template v-slot:tailing>
+                <div style="margin: 5px" class="btn-group-sm btn-group">
+                  <button class="btn btn-danger" @click="onDeleteTrack(diskIndex, trackIndex)">
+                    <i class="bi-trash-fill" />
+                  </button>
+                </div>
+              </template>
+            </track-input>
+          </template>
         </div>
       </div>
     </div>
-    <template v-slot:footer>
-      <button style="flex-grow: 1;" class="btn btn-primary" :disabled="!progressModal.footerEnabled"
-              @click="progressModal.onClose"
-      >
-        <i class="bi-x-lg"></i>
-        <span> Close</span>
-      </button>
-    </template>
-  </ms-modal-base>
-</div>
+
+    <div class="m-3">
+      <div class="btn btn-success" style="width: 100%" @click="onAddDisk">
+        <i class="bi-plus-lg"/>
+        <span> Add Disk</span>
+      </div>
+    </div>
+  </div>
+  <div v-else-if="isEditMode && album.isLoading" style="display: flex; flex-grow: 1; justify-content: center; align-items: center; flex-flow: column">
+    <div class="spinner-border m-3"></div>
+    <div>Loading Album Data...</div>
+  </div>
+</transition>
+
+<!-- Modal Area -->
+<ms-modal-base ref="progressModal" :is-modal-show="progressModal.isShow" header="Saving Album"
+               :show-close-button="false" width="50%"
+>
+  <div class="m-2" style="display: flex; flex-flow: column">
+    <div class="m-2">{{progressModal.progressTitle}}</div>
+    <div class="m-2">
+      <div class="progress" style="height: 20px">
+        <div class="progress-bar progress-bar-striped"
+             :class="{'bg-danger' : progressModal.progressState === 'error',
+                      'bg-success': progressModal.progressState === 'finished',
+                      'progress-bar-animated' : progressModal.progressState === 'normal',
+                      }"
+             :style="{width: `${progressModal.progress}%`}"
+        ></div>
+      </div>
+    </div>
+  </div>
+  <template v-slot:footer>
+    <button style="flex-grow: 1;" class="btn btn-primary" :disabled="!progressModal.footerEnabled"
+            @click="progressModal.onClose"
+    >
+      <i class="bi-x-lg"></i>
+      <span> Close</span>
+    </button>
+  </template>
+</ms-modal-base>
 </template>
 <script>
 import MSNavSectionHeader from '@/components/MSNavSectionHeader.vue';
@@ -115,9 +126,26 @@ import MSInput from '@/components/MSInput.vue';
 import { fieldValidator, FormField } from '@/common/FormField';
 import api from '@/api';
 import { mapActions } from 'vuex';
+import { $debounce } from '@/common/utils';
 
 function buildArtistKey(artist) {
   return `${artist.id || 'null'}${artist.name}`;
+}
+
+function isModifyAction(action) {
+  return (action === 'create') || (action === 'update');
+}
+
+function deleteAction(id) {
+  return { action: 'delete', ref: id };
+}
+
+function createAction(data) {
+  return { action: 'create', data };
+}
+
+function updateAction(data) {
+  return { action: 'update', data };
 }
 
 export default {
@@ -145,6 +173,13 @@ export default {
         isLoading: false,
       },
 
+      editHistory: {
+        tracks: [],
+        recordings: [],
+      },
+
+      debounce: $debounce(500),
+
       progressModal: {
         isShow: false,
         progressTitle: '',
@@ -158,8 +193,66 @@ export default {
 
     };
   },
+  mounted() {
+    if (this.isEditMode) {
+      this.album.isLoading = true;
+      this.initData();
+    }
+  },
   methods: {
+    async initData() {
+      this.album.isLoading = true;
+      try {
+        const { albumId } = this;
+        const album = await api.album_get(albumId).then((data) => data.album);
+        const artistMapping = (artist) => ({
+          id: artist.id,
+          name: artist.name,
+          found: true,
+          ambiguous: false,
+        });
+
+        const coverArtMapping = (coverArt) => ({
+          type: 'cover-art',
+          data: coverArt,
+          preview: api.config.coverArtUrlOf(coverArt.filePath),
+        });
+
+        const trackMapping = (track) => ({
+          title: track.title,
+          id: track.id,
+          index: track.trackNumber,
+          disk: track.diskNumber,
+          recordings: track.recordings.map((recording) => ({
+            id: recording.id,
+            protocol: recording.protocol,
+            server: recording.server,
+            location: recording.location,
+          })),
+          artists: track.artists.map(artistMapping),
+        });
+
+        this.album.id = album.id;
+        this.album.title.value = album.name;
+        this.album.artists.addAll(album.artists.map(artistMapping));
+        this.album.coverArts.addAll(album.coverArts.map(coverArtMapping));
+
+        const tracks = (await api.album_tracks(this.albumId)).map((data) => data.track);
+        const disks = (() => {
+          const entries = Object.entries(tracks.groupBy((track) => track.diskNumber));
+          entries.sort(([a], [b]) => (a || 0) - (b || 0));
+          return entries.map(([, value]) => value);
+        })();
+        disks.forEach((disk) => {
+          this.album.disks.push({ tracks: disk.map(trackMapping) });
+        });
+      } finally {
+        this.album.isLoading = false;
+      }
+    },
+
     ...mapActions('GlobalModal', ['showGlobalModal', 'hideGlobalModal']),
+
     async fillTrackArtists() {
       const artists = this.album.disks.flatMap((disk) => disk.tracks)
         .flatMap((track) => track.artists)
@@ -186,48 +279,145 @@ export default {
       this.album.artists.clear();
       this.album.artists.addAll(artists);
     },
+
     onAddDisk() {
       this.album.disks.push({
         tracks: [],
       });
     },
 
-    onDeleteDisk(diskIndex) {
-      this.showGlobalModal({
-        title: `Delete Disk ${diskIndex + 1}`,
-        content: `
+    async onDeleteDisk(diskIndex) {
+      const result = await new Promise((resolve) => {
+        this.showGlobalModal({
+          title: `Delete Disk ${diskIndex + 1}`,
+          content: `
 Are you sure to delete disk ${diskIndex + 1} ?
-<br/> Tracks in this disk will all be deleted. This operation cannot be reverted.
+<br/> Track data in this disk will all be deleted. ${this.isEditMode ? '' : 'This operation cannot be reverted.'}
 `.trim(),
-        onConfirm: () => { this.hideGlobalModal(); this.album.disks.delete(diskIndex); },
-        onCancel: this.hideGlobalModal,
-        buttonType: 'sao-yes-no',
+          onConfirm: () => this.hideGlobalModal().then(() => resolve(true)),
+          onCancel: () => this.hideGlobalModal().then(() => resolve(false)),
+          buttonType: 'sao-yes-no',
+        });
       });
+
+      if (!result) return;
+
+      const { album } = this;
+      if (this.isEditMode) {
+        const trackHistory = this.editHistory.tracks;
+        const recordingHistory = this.editHistory.recordings;
+        // Delete tracks and recordings that exists on server
+        const disk = album.disks[diskIndex];
+        const existTrack = disk.tracks.filter((track) => !!track.id);
+        const existRecordings = existTrack.flatMap((track) => track.recordings.filter((recording) => !!recording.id));
+        trackHistory.addAll(existTrack.map((track) => deleteAction(track.id)));
+        recordingHistory.addAll(existRecordings.map((recording) => deleteAction(recording.id)));
+
+        // Delete tracks and recordings that newly created
+        const newTracks = disk.tracks.filter((track) => !track.id);
+        const newRecordings = newTracks.recordings.filter((recording) => !recording.id);
+
+        newTracks.forEach((newTrack) => {
+          trackHistory.deleteWhere(({ action, data }) => (isModifyAction(action) && data.track === newTrack));
+        });
+        newRecordings.forEach((newRecording) => {
+          recordingHistory.deleteWhere(({ action, data }) => (isModifyAction(action) && data.recording === newRecording));
+        });
+      }
+
+      this.album.disks.delete(diskIndex);
     },
 
     onAddTrack(diskIndex) {
       const { tracks } = this.album.disks[diskIndex];
       const { length } = tracks;
-      tracks.push({
+      const newTrack = {
         title: null,
         index: length + 1,
         recordings: [],
         artists: [],
+        disk: diskIndex + 1,
+      };
+      tracks.push(newTrack);
+      if (this.isEditMode) this.editHistory.tracks.push({ action: 'create',
+        data: {
+          diskId: diskIndex + 1,
+          track: newTrack,
+        },
       });
     },
 
-    onDeleteTrack(diskIndex, trackIndex) {
+    async onDeleteTrack(diskIndex, trackIndex) {
       const track = this.album.disks[diskIndex].tracks[trackIndex];
-      this.showGlobalModal({
-        title: 'Delete track',
-        content: `
+      const result = await new Promise((resolve) => {
+        this.showGlobalModal({
+          title: 'Delete track',
+          content: `
 Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'} (at disk ${diskIndex + 1}, index ${track.index})?
-<br/> Track data will be deleted. This operation cannot be reverted.
+<br/> Track data will be deleted. ${this.isEditMode ? '' : 'This operation cannot be reverted.'}
 `.trim(),
-        onConfirm: () => { this.hideGlobalModal(); this.album.disks[diskIndex].tracks.delete(trackIndex); },
-        onCancel: this.hideGlobalModal,
-        buttonType: 'sao-yes-no',
+          onConfirm: () => this.hideGlobalModal().then(() => resolve(true)),
+          onCancel: () => this.hideGlobalModal().then(() => resolve(false)),
+          buttonType: 'sao-yes-no',
+        });
       });
+      if (!result) return;
+
+      if (this.isEditMode) {
+        if (!!track.id) {
+          // Delete recordings that exist on server
+          const recordings = track.recordings.filter((recording) => !!recording.id);
+          this.editHistory.recordings.addAll(recordings.map((recording) => ({ action: 'delete', ref: recording.id })));
+
+          // Delete recordings that newly created.
+          const newRecordings = track.recordings.filter((recording) => !recording.id);
+          newRecordings.forEach((newRecording) => {
+            this.editHistory.recordings.deleteWhere(({ action, data }) => (isModifyAction(action) && data.recording === newRecording));
+          });
+
+          // Delete track that exists on server
+          this.editHistory.tracks.push({ action: 'delete', ref: track.id });
+        } else {
+          this.editHistory.tracks.deleteWhere(({ action, data }) => (isModifyAction(action) && data.track === track));
+        }
+      }
+
+      this.album.disks[diskIndex].tracks.delete(trackIndex);
+    },
+
+    onUpdateTrackTitle(diskIndex, { track }) {
+      if (!track.id) return;
+      let update = this.editHistory.tracks.find(({ action, data }) => (isModifyAction(action) && (data.id === track.id)));
+      if (!update) {
+        update = { action: 'update', data: { diskId: diskIndex + 1, track } };
+        this.editHistory.tracks.push(update);
+      }
+    },
+
+    onUpdateTrackIndex(diskIndex, { track }) {
+      if (!track.id) return;
+      let update = this.editHistory.tracks.find(({ action, data }) => (isModifyAction(action) && (data.id === track.id)));
+      if (!update) {
+        update = { action: 'update', data: { diskId: diskIndex + 1, track } };
+        this.editHistory.tracks.push(update);
+      }
+    },
+
+    onUpdateRecording(track, { recording }) {
+      if (!recording.id) return;
+      let update = this.editHistory.recordings.find(({ action, data }) => (isModifyAction(action) && (data.recording.id === recording.id)));
+      if (!update) {
+        update = { action: 'update', data: { track, recording } };
+        this.editHistory.tracks.push(update);
+      }
+    },
+
+    onAddRecording(track, recording) {
+      this.editHistory.recordings.push(createAction({ track, recording }));
+    },
+
+    onDeleteRecording({ target }) {
+      this.editHistory.recordings.deleteWhere(({ action, data }) => (isModifyAction(action) && data === target));
     },
 
     async onSubmit() {
@@ -262,91 +452,185 @@ Are you sure to delete ${track.title ? (`track '${track.title}'`) : 'this track'
       // Create cover arts
       actions.push(async (progress, title) => {
         const coverArts = album.coverArts.filter((coverArt) => (coverArt.type === 'file'));
-        if (coverArts.isEmpty()) {
-          progress(100);
-          return;
-        }
+        if (coverArts.isEmpty()) { progress(100); return; }
         title('Uploading cover art');
         progress(1);
         const base = 1 / coverArts.length;
         let count = 0;
         for (const coverArt of coverArts) {
-          coverArt.id = (await api.coverArt_upload([coverArt.data], (event) => {
-            if (event.lengthComputable) {
-              progress(((count + (event.loaded / event.total)) * base) * 100);
-            }
-          }).then((data) => data.first().coverArt)).id;
+          const newCoverArt = (await api.coverArt_upload([coverArt.data], (event) => {
+            if (event.lengthComputable) progress(((count + (event.loaded / event.total)) * base) * 100);
+          }).then((data) => data.first().coverArt));
+          coverArt.data = newCoverArt;
+          coverArt.id = newCoverArt.id;
           count++;
           progress(count * base * 100);
         }
       });
 
-      // Create album
-      actions.push(async (progress, title) => {
-        title(`Creating album '${album.title.value}'`);
-        progress(1);
-        album.id = (await api.album_create({
-          title: album.title.value,
-          artistIds: artists.mapNotNull((artist) => artist.id),
-          coverArtIds: album.coverArts.mapNotNull((coverArt) => ((coverArt.type === 'file') ? coverArt.id : coverArt.data.id)),
-        }).then((data) => data.album)).id;
-        progress(100);
-      });
-
-      // Create tracks
-      actions.push(async (progress, title) => {
-        const tracks = album.disks.mapIndexed((disk, index) => disk.tracks.map((track) => ({
-          track,
-          diskId: index + 1,
-        }))).flatten();
-
-        if (tracks.isEmpty()) { progress(100); return; }
-        title('Creating tracks');
-        progress(1);
-        const base = 1 / tracks.length;
-        let count = 0;
-        for (const { track, diskId } of tracks) {
-          title(`Creating track '${track.title}'`);
-          track.id = (await api.track_create({
-            title: track.title,
-            artistIds: track.artists
-              .mapNotNull((artist) => artists.firstMatch((exists) => buildArtistKey(artist) === buildArtistKey(exists)))
-              .map((artist) => artist.id),
-            diskNumber: diskId,
-            trackNumber: track.index,
-            albumId: album.id,
-          }).then((data) => data.track)).id;
-          count++;
-          progress(count * base * 100);
-        }
-      });
-
-      // Create recordings
-      actions.push(async (progress, title) => {
-        const recordings = album.disks.flatMap((disk) => disk.tracks)
-          .flatMap((track) => track.recordings.map((recording) => ({
-            recording,
-            track,
-          })));
-
-        if (recordings.isEmpty()) { progress(100); return; }
-
-        title('Appending Recording to tracks.');
-        progress(1);
-        const base = 1 / recordings.length;
-        let count = 0;
-        for (const { recording, track } of recordings) {
-          title(`Appending Recording to track '${track.title}'`);
-          await api.recording_create({
-            trackId: track.id,
-            protocol: recording.protocol,
-            server: recording.server,
-            location: recording.location,
+      if (this.isEditMode) {
+        // Update album
+        actions.push(async (progress, title) => {
+          title(`Updating album '${album.title.value}'`);
+          progress(1);
+          await api.album_save(this.albumId, {
+            title: album.title.value,
+            artistIds: artists.mapNotNull((artist) => artist.id),
+            coverArtIds: album.coverArts.mapNotNull((coverArt) => ((coverArt.type === 'file') ? coverArt.id : coverArt.data.id)),
           });
-          count++;
-          progress(count * base * 100);
-        }
-      });
+          progress(100);
+        });
+
+        // Update tracks
+        actions.push(async (progress, title) => {
+          const historyActions = this.editHistory.tracks.groupBy(({ action }) => action);
+          const subActions = [
+            ...(historyActions.delete ? actions.delete.map(({ ref }) => () => {
+              title(`Deleting track @${ref}`);
+              return api.track_delete(ref);
+            }) : []),
+            ...(historyActions.update ? actions.update.map(({ data }) => () => {
+              title(`Updating track '${data.track.title}'`);
+              const { diskId, track } = data;
+              return api.track_update(track.id, {
+                title: track.title,
+                artistIds: track.artists.map((artist) => artist.id),
+                albumId: this.albumId,
+                diskNumber: diskId,
+                trackNumber: track.index,
+              });
+            }) : []),
+            ...(historyActions.create ? historyActions.create.map(({ data }) => () => {
+              const { diskId, track } = data;
+              title(`Creating track '${track.title}'`);
+              return api.track_create({
+                title: track.title,
+                artistIds: track.artists.map((artist) => artist.id),
+                albumId: this.albumId,
+                diskNumber: diskId,
+                trackNumber: track.index,
+              }).then((r) => { track.id = r.track.id; });
+            }) : []),
+          ];
+
+          if (subActions.isEmpty()) {
+            progress(100);
+            return;
+          }
+
+          const base = 1 / subActions;
+          let count = 0;
+          for (const action of subActions) {
+            await action();
+            count++;
+            progress(count * base * 100);
+          }
+          progress(100);
+        });
+
+        // Update recordings
+        actions.push(async (progress, title) => {
+          const historyActions = this.editHistory.recordings.groupBy(({ action }) => action);
+          const subActions = [
+            ...(historyActions.delete ? historyActions.delete.map(({ ref }) => () => {
+              title(`Deleting recording @${ref}`);
+              return api.recording_delete(ref);
+            }) : []),
+            ...(historyActions.update ? historyActions.update.map(({ data }) => {
+              title(`Updating recording @${data.id}`);
+              return api.recording_update(data.id, {
+                protocol: data.protocol,
+                server: data.server,
+                location: data.location,
+              });
+            }) : []),
+            ...(historyActions.create ? historyActions.update.map((({ data }) => {
+              title('Appending recordings');
+              const { track, recording } = data;
+              return api.recording_create({
+                trackId: track.id,
+                ...recording,
+              }).then((r) => { recording.id = r.recording.id; });
+            })) : []),
+          ];
+
+          const base = 1 / subActions.length;
+          let count = 0;
+          for (const action of subActions) {
+            await action();
+            count++;
+            progress(count * base * 100);
+          }
+          progress(100);
+        });
+      } else {
+        // Create album
+        actions.push(async (progress, title) => {
+          title(`Creating album '${album.title.value}'`);
+          progress(1);
+          album.id = (await api.album_create({
+            title: album.title.value,
+            artistIds: artists.mapNotNull((artist) => artist.id),
+            coverArtIds: album.coverArts.mapNotNull((coverArt) => ((coverArt.type === 'file') ? coverArt.id : coverArt.data.id)),
+          }).then((data) => data.album)).id;
+          progress(100);
+        });
+
+        // Create tracks
+        actions.push(async (progress, title) => {
+          const tracks = album.disks.mapIndexed((disk, index) => disk.tracks.map((track) => ({
+            track,
+            diskId: index + 1,
+          }))).flatten();
+
+          if (tracks.isEmpty()) { progress(100); return; }
+          title('Creating tracks');
+          progress(1);
+          const base = 1 / tracks.length;
+          let count = 0;
+          for (const { track, diskId } of tracks) {
+            title(`Creating track '${track.title}'`);
+            track.id = (await api.track_create({
+              title: track.title,
+              artistIds: track.artists
+                .mapNotNull((artist) => artists.firstMatch((exists) => buildArtistKey(artist) === buildArtistKey(exists)))
+                .map((artist) => artist.id),
+              diskNumber: diskId,
+              trackNumber: track.index,
+              albumId: album.id,
+            }).then((data) => data.track)).id;
+            count++;
+            progress(count * base * 100);
+          }
+        });
+
+        // Create recordings
+        actions.push(async (progress, title) => {
+          const recordings = album.disks.flatMap((disk) => disk.tracks)
+            .flatMap((track) => track.recordings.map((recording) => ({
+              recording,
+              track,
+            })));
+
+          if (recordings.isEmpty()) { progress(100); return; }
+
+          title('Appending Recording to tracks.');
+          progress(1);
+          const base = 1 / recordings.length;
+          let count = 0;
+          for (const { recording, track } of recordings) {
+            title(`Appending Recording to track '${track.title}'`);
+            await api.recording_create({
+              trackId: track.id,
+              protocol: recording.protocol,
+              server: recording.server,
+              location: recording.location,
+            });
+            count++;
+            progress(count * base * 100);
+          }
+        });
+      }
 
       await this.handleAlbumSave(actions);
     },
@@ -422,6 +706,11 @@ Would you want to use first matched result as their name?
       }
 
       progressModal.footerEnabled = true;
+    },
+  },
+  computed: {
+    isEditMode() {
+      return `${this.albumId || ''}`.trim() !== '';
     },
   },
 };

@@ -67,7 +67,7 @@ function computeHeaders() {
   return headers;
 }
 
-function getRequest(url, additional) {
+function processConfig(additional) {
   const headers = {
     ...(additional ? (additional.headers || {}) : {}),
     ...computeHeaders(),
@@ -76,26 +76,32 @@ function getRequest(url, additional) {
   newConfig.headers = null;
 
   return {
+    headers,
+    ...newConfig,
+  };
+}
+
+function getRequest(url, additional) {
+  return {
     method: 'get',
     url,
-    headers,
-    ...additional,
+    ...processConfig(additional),
   };
 }
 
 function postRequest(url, additional) {
-  const headers = {
-    ...(additional ? (additional.headers || {}) : {}),
-    ...computeHeaders(),
-  };
-  const newConfig = additional || {};
-  newConfig.headers = null;
-
   return {
     method: 'post',
     url,
-    headers,
-    ...newConfig,
+    ...processConfig(additional),
+  };
+}
+
+function deleteRequest(url, additional) {
+  return {
+    method: 'delete',
+    url,
+    ...processConfig(additional),
   };
 }
 
@@ -178,45 +184,97 @@ export default {
     })).then(({ data }) => data);
   },
 
-  /** @return { Page } artist page query result */
-  artist_listAll(params) {
-    return $axios(getRequest(composeRequestUrl('api/meta/artist'), {
-      params,
-    })).then(({ data }) => data);
-  },
-
-  artist_create({ name }) {
-    const query = new URLSearchParams({ name });
-    return $axios(postRequest(composeRequestUrl('api/meta/artist'), {
-      data: query,
-    })).then(({ data }) => data);
-  },
-
   album_tracks(albumId) {
     return $axios(getRequest(composeRequestUrl(`api/meta/album/${albumId}/track`)))
       .then(({ data }) => data);
   },
 
+  album_save(albumId, { title, artistIds, coverArtIds }) {
+    const query = new URLSearchParams({ title });
+    artistIds.forEach((id) => query.append('albumArtistId', `${id}`));
+    coverArtIds.forEach((id) => query.append('albumArtId', `${id}`));
+    return $axios(
+      postRequest(composeRequestUrl(`api/meta/album/${albumId}`), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
+  },
+
+  /** @return { Page } artist page query result */
+  artist_listAll(params) {
+    return $axios(
+      getRequest(composeRequestUrl('api/meta/artist'), {
+        params,
+      }),
+    ).then(({ data }) => data);
+  },
+
+  artist_create({ name }) {
+    const query = new URLSearchParams({ name });
+    return $axios(
+      postRequest(composeRequestUrl('api/meta/artist'), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
+  },
+
   /** @return { Page } track page query result */
   track_listAll(params) {
-    return $axios(getRequest(composeRequestUrl('api/meta/track'), {
-      params,
-    }));
+    return $axios(
+      getRequest(composeRequestUrl('api/meta/track'), {
+        params,
+      }),
+    ).then(({ data }) => data);
   },
 
   track_create({ title, artistIds, albumId, diskNumber, trackNumber }) {
     const query = new URLSearchParams({ title, diskNumber, trackNumber, albumId });
     artistIds.forEach((item) => query.append('artistId', `${item}`));
-    return $axios(postRequest(composeRequestUrl('api/meta/track'), {
-      data: query,
-    })).then(({ data }) => data);
+    return $axios(
+      postRequest(composeRequestUrl('api/meta/track'), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
+  },
+
+  track_delete(id) {
+    return $axios(
+      deleteRequest(composeRequestUrl(`api/meta/track/${id}`)),
+    ).then(({ data }) => data);
+  },
+
+  track_update(id, { title, artistIds, albumId, diskNumber, trackNumber }) {
+    const query = new URLSearchParams({ title, diskNumber, trackNumber, albumId });
+    artistIds.forEach((item) => query.append('artistId', `${item}`));
+    return $axios(
+      postRequest(composeRequestUrl(`api/meta/track/${id}`), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
   },
 
   recording_create({ trackId, protocol, server, location }) {
     const query = new URLSearchParams({ protocol, server, location });
-    return $axios(postRequest(composeRequestUrl(`api/meta/track/${trackId}/recording`), {
-      data: query,
-    })).then(({ data }) => data);
+    return $axios(
+      postRequest(composeRequestUrl(`api/meta/track/${trackId}/recording`), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
+  },
+
+  recording_delete(id) {
+    return $axios(
+      deleteRequest(composeRequestUrl(`api/meta/recording/${id}`)),
+    ).then(({ data }) => data);
+  },
+
+  recording_update(id, { protocol, server, location }) {
+    const query = new URLSearchParams({ protocol, server, location });
+    return $axios(
+      postRequest(composeRequestUrl(`api/meta/recording/${id}`), {
+        data: query,
+      }),
+    ).then(({ data }) => data);
   },
 
   /** @return { Page } cover art page query result */

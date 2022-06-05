@@ -91,7 +91,7 @@ export default {
       default: 'top',
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'add', 'delete'],
   data() {
     return {
       artistInfoCache: {},
@@ -129,6 +129,7 @@ export default {
       };
       const newList = [...this.value, artist];
       this.value = newList;
+      this.$emit('add', { artist });
       this.artistInfoCache[newList.length - 1] = {
         image: null,
         alternatives: [],
@@ -173,6 +174,8 @@ export default {
       }
     },
     onArtistDelete(index) {
+      const target = this.modelValue.find((_, i) => i === index);
+      this.$emit('delete', { index, artist: target });
       this.$emit('update:modelValue', this.modelValue.filter((_, i) => i !== index));
       this.artistInfoCache[index] = null;
     },
@@ -186,6 +189,8 @@ export default {
 
       if (!result) {
         const { performDeleteItem } = this;
+        const target = this.modelValue.find((_, i) => i === performDeleteItem);
+        this.$emit('delete', { index: performDeleteItem, artist: target });
         this.delay.cancel();
         this.onArtistDelete(performDeleteItem);
         this.performDeleteItem = null;
