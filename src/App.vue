@@ -45,7 +45,7 @@ export default {
     'ms-modal-base': MSModalBase,
   },
   mounted() {
-    this.setGlobalModalRef(this.$refs.modal1)
+    this.setGlobalModalRef(this.$refs.modal1);
   },
   methods: {
     onLogoutButtonClick() {
@@ -91,7 +91,6 @@ export default {
       modalOnCancel: (state) => state.onCancel,
       modalConfirmText: (state) => state.confirmText,
       modalCancelText: (state) => state.cancelText,
-      modalModalRef: (state) => state.modalRef,
     }),
   },
 };

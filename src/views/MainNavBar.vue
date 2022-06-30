@@ -18,32 +18,27 @@
     </div>
   </div>
 
-  <template v-for="(item, index) in navBarSections" :key="index">
-    <ms-nav-section-header v-if="item.type === 'section-header'"
-                           :icon="item.icon" :title="item.title"
-    />
-    <ms-nav-section-item v-else-if="item.type === 'section-item'"
-                         :icon="item.icon" :title="item.title"
-                         @click="doItemAction(item)"
-                         :class="[{'active' : navBarActivationKey === item.activeFlag}]"
-    />
-  </template>
+  <nav-bar-section :section="navBarPublicSections" />
+
+  <nav-bar-playlist-section/>
+
+  <nav-bar-section :section="navBarAdministrationSections" />
 </div>
 </template>
 
 <script>
-import MSNavSectionHeader from '@/components/MSNavSectionHeader.vue';
-import MSNavSectionItem from '@/components/MSNavSectionItem.vue';
 import MSImageView from '@/components/MSImageView.vue';
+import NavBarSection from '@/views/NavBar/NavBarSection.vue';
+import NavBarPlaylistSection from '@/views/NavBar/NavBarPlaylistSection.vue';
 
 import { mapGetters } from 'vuex';
 
 export default {
   name: 'MainNavBar',
   components: {
-    'ms-nav-section-header': MSNavSectionHeader,
-    'ms-nav-section-item': MSNavSectionItem,
     'ms-image-view': MSImageView,
+    NavBarSection,
+    NavBarPlaylistSection,
   },
   data() {
     return {
@@ -58,7 +53,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['navBarSections', 'navBarActivationKey']),
+    ...mapGetters(['navBarPublicSections', 'navBarAdministrationSections', 'navBarActivationKey']),
     ...mapGetters('UserInfo', ['userInfo']),
   },
 };

@@ -95,7 +95,7 @@ export default {
       const { album } = this;
       if (!album) return null;
       const { artists } = album;
-      return this.artistSummaryOf(artists)
+      return this.artistSummaryOf(artists);
     },
   },
 };

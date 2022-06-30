@@ -27,8 +27,7 @@ window.onload = () => {
   createApp(App).use(store).use(router).mount('#app');
 
   globalWorker.newWork(() => {
-    store.dispatch('UserInfo/renewLoginSession').then(() => {
-    }).catch((e) => {
+    store.dispatch('UserInfo/renewLoginSession').then().catch((e) => {
       console.error('Session refresh failed.', e);
       store.commit('UserInfo/setLoggedIn', false);
     });

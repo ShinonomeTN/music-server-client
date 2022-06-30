@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'PlayerView'
+  name: 'PlayerView',
 };
 </script>
 

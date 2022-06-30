@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'AllArtistsView'
+  name: 'AllArtistsView',
 };
 </script>
 

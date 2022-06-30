@@ -1,29 +1,45 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { BrowserWindow, BrowserView } from 'electron';
+import {
+  BrowserWindow,
+  BrowserView,
+  IpcMainInvokeEvent,
+  BrowserWindowConstructorOptions,
+} from 'electron';
 
 // eslint-disable-next-line import/extensions
 import '@/common/stupid.js';
 import { BusinessError } from '@/common/business-error';
+import { Optional } from '@/common/foolish';
 import path from 'path';
 
-function getWindowOfIndex(index) {
+function getWindowOfIndex(index : number) : Optional<BrowserWindow> {
   const all = BrowserWindow.getAllWindows();
   if (all.isEmpty()) return null;
   return all[index];
 }
 
+export type NativeWindowOpenParams = {
+  url : string,
+  config : BrowserWindowConstructorOptions,
+  parentWindowIndex: number,
+  modal : unknown
+}
+
 export default {
-  async openNewWindow(event, { url, config, parentWindowIndex, modal }) {
+  async openNewWindow(event : IpcMainInvokeEvent, { url, config, parentWindowIndex, modal } : NativeWindowOpenParams) {
     const windowConf = config || { width: 320, height: 240 };
     if (parentWindowIndex !== null) {
       const window = getWindowOfIndex(parentWindowIndex);
+      // @ts-ignore
       if (window) windowConf.parent = window;
     }
     if (modal) {
       if (parentWindowIndex == null) {
         const window = getWindowOfIndex(0);
+        // @ts-ignore
         if (window) windowConf.parent = window;
       }
+      // @ts-ignore
       windowConf.modal = true;
     }
     const window = new BrowserWindow(windowConf);
@@ -35,18 +51,20 @@ export default {
     await window.loadURL(url);
   },
 
-  async openLoginWindow(event, { url }) {
+  async openLoginWindow(event : IpcMainInvokeEvent, { url } : { url : string}) {
     const defaultWindow = getWindowOfIndex(0);
     if (!defaultWindow) console.warn('No default window found. Login window will not show.');
     const window = new BrowserWindow({
       width: 400,
       height: 600,
       modal: true,
+      // @ts-ignore
       parent: defaultWindow,
       titleBarStyle: 'default',
       titleBarOverlay: true,
       webPreferences: {
         preload: path.resolve(path.join(__dirname, 'preload.js')),
+        // @ts-ignore
         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
         contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
       },
@@ -75,6 +93,7 @@ export default {
       });
 
       window.once('close', () => {
+        // @ts-ignore
         if (!didReceiveToken) reject(new BusinessError({ error: 'user_cancel', message: 'did_not_receive_any_token' }));
       });
     });
@@ -82,6 +101,7 @@ export default {
     return promise;
   },
 
+  // @ts-ignore
   async openNewView(event, { url, windowIndex, sizeConfig, autoResizeOptions }) {
     const parent = getWindowOfIndex(windowIndex || 0);
     if (parent === null) return;
@@ -94,6 +114,7 @@ export default {
     };
 
     const view = new BrowserView();
+    // @ts-ignore
     parent.setBrowserView(view);
 
     console.info(`Open new view in window ${parent} with url '${url}', view bounds:`, viewConfig);
@@ -104,8 +125,9 @@ export default {
     await view.webContents.loadURL(url);
   },
 
-  async maximizeWindow(event, { windowIndex }) {
+  async maximizeWindow(event : IpcMainInvokeEvent, { windowIndex } : { windowIndex: number }) {
     const window = getWindowOfIndex(windowIndex);
+    // @ts-ignore
     if (!window.isMaximized()) window.maximize();
   },
 

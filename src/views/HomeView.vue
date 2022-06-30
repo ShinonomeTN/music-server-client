@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script>
+<script lang="js">
 import MainNavBar from '@/views/MainNavBar.vue';
 import { mapActions, mapGetters } from 'vuex';
 import PlayerView from '@/views/Player/PlayerView.vue';
@@ -64,43 +64,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-
-@media screen and (min-width: 900px) {
-  .main-navbar {
-    min-width: 300px;
-  }
-}
-
-@media screen and (max-width: 900px) {
-  .main-navbar {
-    min-width: 200px;
-  }
-}
-
-.main-navbar {
-  height: inherit;
-  transition: width 0.3s;
-  overflow: hidden;
-  overflow-y: scroll;
-  display: flex;
-  flex-flow: column;
-}
-
-.main-content {
-  flex-grow: 1;
-  overflow: hidden;
-  /*overflow-y: scroll;*/
-}
-
-.main-content.child-require-scroll-y {
-  overflow-y: scroll;
-}
-.main-content.child-require-flex {
-  display: flex;
-}
-.main-content.child-require-relative {
-  position: relative;
-}
-</style>

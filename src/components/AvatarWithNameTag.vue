@@ -35,7 +35,7 @@ export default {
     disabled: Boolean,
   },
   created() {
-    this.$emit('created')
+    this.$emit('created');
   },
   methods: {
     onCloseClick() {

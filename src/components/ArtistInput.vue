@@ -67,10 +67,10 @@
 import AvatarWithNameTag from '@/components/AvatarWithNameTag.vue';
 import MSTagInput from '@/components/MSTagInput.vue';
 import api from '@/api';
-import { $delay } from '@/common/utils';
 import MSImageView from '@/components/MSImageView.vue';
 import MSBackdrop from '@/components/MSBackdrop.vue';
 import { nextTick } from 'vue';
+import { Delay } from '@/common/utils';
 
 export default {
   name: 'ArtistInput',
@@ -96,7 +96,7 @@ export default {
     return {
       artistInfoCache: {},
       performDeleteItem: null,
-      delay: $delay(1000, 'reject'),
+      delay: new Delay(1000, 'reject'),
       showDisAmbiguous: false,
       selectedIndex: null,
     };

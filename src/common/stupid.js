@@ -8,22 +8,14 @@ function copyPropertiesTo(item, source) {
   }
 }
 
-export function entries(obj) {
-  return Object.entries(obj);
-}
-
-export function filteringFields(obj, ...fields) {
-  return entries(obj)
-    .filter(([key]) => key in fields)
-    .mapToMap(([key]) => key, ([, value]) => value);
-}
-
 copyPropertiesTo(Object.prototype, {
   filteringFields(...fields) {
-    return filteringFields(this, fields);
+    return this.entries()
+      .filter(([key]) => key in fields)
+      .mapToMap(([key]) => key, ([, value]) => value);
   },
   entries() {
-    return entries(this);
+    return Object.entries(this);
   },
 });
 
@@ -105,7 +97,7 @@ copyPropertiesTo(Array.prototype, {
   },
   clear() {
     const { length } = this;
-    this.splice(0, length);
+    return this.splice(0, length);
   },
   addAll(e) {
     e.forEach((i) => this.push(i));

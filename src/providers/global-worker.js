@@ -48,6 +48,7 @@ export default {
     console.debug('Worker started.');
     workerKickStart();
   },
+
   stop() {
     if (!workerConfig.isRunning) return;
     workerConfig.isRunning = false;

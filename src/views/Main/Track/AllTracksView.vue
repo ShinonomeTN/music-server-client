@@ -2,9 +2,9 @@
 <div>This is all tracks</div>
 </template>
 
-<script>
+<script lang="js">
 export default {
-  name: 'AllTracksView'
+  name: 'AllTracksView',
 };
 </script>
 

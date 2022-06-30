@@ -4,8 +4,8 @@ import HomeView from '@/views/HomeView.vue';
 import LoginView from '@/views/LoginView.vue';
 
 import store from '@/store';
-
 import appConfig from '@/config';
+import MicroRpc from '@/common/micro-rpc';
 
 import ArtistRoutes from './modules/artist-routes';
 import AlbumRoutes from './modules/album-routes';
@@ -74,7 +74,7 @@ function computeNavBarActivationKey(to) {
     const selected = (second || first);
     const { meta } = selected || {};
     const name = meta.navSection || selected.name;
-    if (name) key = `route_name:${name}`;
+    if (name) key = MicroRpc.format('route_view', [name, to.params]);
   }
   store.commit('setNavBarActivationKey', key);
 }

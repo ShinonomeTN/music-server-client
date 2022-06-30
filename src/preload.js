@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 
-contextBridge.exposeInMainWorld('electron', {
-  ipcRenderer,
-});
-
-contextBridge.exposeInMainWorld('$native', (name, param) => ipcRenderer.invoke(name, param));
+[
+  ['electron', { ipcRenderer }],
+  ['$native', (name, param) => ipcRenderer.invoke(name, param)],
+].forEach(([key, value]) => contextBridge.exposeInMainWorld(key, value));

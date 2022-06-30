@@ -172,7 +172,7 @@ export default {
       },
       set(value) {
         this.$emit('update:trackIndex', value);
-        this.$emit('updateTrackIndex', value)
+        this.$emit('updateTrackIndex', value);
       },
     },
   },

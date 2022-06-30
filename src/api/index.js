@@ -120,26 +120,28 @@ function deleteRequest(url, additional) {
  * @property { boolean } hasPrev has previous page
  * @property { Object[] } content page elements
  */
+
 export default {
   config,
   /**
    * Fetch remote music server configuration
    * @param { String } serverAddress remote server address with protocol
+   *
    */
   fetchRemoteServerInfo(serverAddress) {
-    return $axios(getRequest(`${serverAddress}/.music_server.json`));
+    return $axios(getRequest(`${serverAddress}/.music_server.json`)).then(({ data }) => data);
   },
 
   fetchCurrentServerInfo() {
-    return $axios(getRequest(composeRequestUrl('.music_server.json')));
+    return $axios(getRequest(composeRequestUrl('.music_server.json'))).then(({ data }) => data);
   },
 
   fetchRemoteUserInfo() {
-    return $axios(getRequest(composeRequestUrl('api/auth/login')));
+    return $axios(getRequest(composeRequestUrl('api/auth/login'))).then(({ data }) => data);
   },
 
   refreshSession() {
-    return $axios(postRequest(composeRequestUrl('api/auth/login/refresh')));
+    return $axios(postRequest(composeRequestUrl('api/auth/login/refresh'))).then(({ data }) => data);
   },
 
   refreshToken(token) {
@@ -147,7 +149,7 @@ export default {
       headers: {
         'X-APP-TOKEN': token,
       },
-    }));
+    })).then(({ data }) => data.token);
   },
 
   auth_login({ username, password }) {
@@ -156,7 +158,7 @@ export default {
     });
     return $axios(postRequest(composeRequestUrl('api/auth/login'), {
       data: query,
-    }));
+    })).then(({ data }) => data);
   },
 
   /** @return { Page } album page query result */
@@ -291,5 +293,9 @@ export default {
       data: form,
       onUploadProgress,
     })).then(({ data }) => data);
+  },
+
+  playlist_listAll() {
+    return $axios(getRequest(composeRequestUrl('/api/library/playlist'))).then(({ data }) => data);
   },
 };

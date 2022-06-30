@@ -1,64 +1,74 @@
 import { createStore } from 'vuex';
 
+import { navBarAdministrationSection, navBarPublicSection } from '@/providers/nav-bar-factory';
+
 import appConfig from '@/config';
-import {
-  navBarAdministrationSection,
-  navBarPublicSection,
-  navBarSection,
-} from '@/providers/nav-bar-factory';
+
 import ServerInfo from './modules/server-info';
 import UserInfo from './modules/user-info';
+import UserPlaylist from './modules/user-playlist';
 import GlobalModal from './modules/global-modal';
 
-export default createStore({
-  state: {
-    title: 'Music Server Management',
-    showTitleBar: false,
-    navBarSections: [],
-    navBarActivationKey: '',
+const getters = {
+  showTitleBar(state) {
+    return state.showTitleBar;
   },
-  getters: {
-    showTitleBar(state) {
-      return state.showTitleBar;
-    },
-    navBarSections(state) {
-      return state.navBarSections;
-    },
-    windowTitle(state) {
-      return state.title;
-    },
-    navBarActivationKey(state) {
-      return state.navBarActivationKey;
-    },
+  navBarPublicSections(state) {
+    return state.navBarPublicSections;
   },
-  mutations: {
-    setTitle(state, newTitle) {
-      state.title = newTitle;
-      if (appConfig.isWeb) document.title = newTitle;
-    },
-    setShowTitleBar(state, show) {
-      state.showTitleBar = show;
-    },
-    setNavbarSections(state, newSections) {
-      state.navBarSections.clear();
-      state.navBarSections.addAll(newSections);
-    },
-    setNavBarActivationKey(state, newKey) {
-      state.navBarActivationKey = newKey;
-    },
+  navBarAdministrationSections(state) {
+    return state.navBarAdministrationSections;
   },
-  actions: {
-    async configureNavBar({ commit }) {
-      const sections = [...navBarPublicSection()];
-      sections.push(navBarSection('music-note-list', 'Playlists'));
+  windowTitle(state) {
+    return state.title;
+  },
+  navBarActivationKey(state) {
+    return state.navBarActivationKey;
+  },
+};
 
-      sections.push(...navBarAdministrationSection());
-      commit('setNavbarSections', sections);
-    },
+const mutations = {
+  setTitle(state, newTitle) {
+    state.title = newTitle;
+    if (appConfig.isWeb) document.title = newTitle;
   },
+  setShowTitleBar(state, show) {
+    state.showTitleBar = show;
+  },
+  setNavBarActivationKey(state, newKey) {
+    state.navBarActivationKey = newKey;
+  },
+};
+
+const actions = {
+  async configureNavBar({ state }) {
+    state.navBarPublicSections.clear();
+    state.navBarPublicSections.addAll(navBarPublicSection());
+
+    state.navBarAdministrationSections.clear();
+    state.navBarAdministrationSections.addAll(navBarAdministrationSection());
+  },
+};
+
+const state = {
+  title: 'Music Server Management',
+  showTitleBar: false,
+  navBarSections: [],
+  navBarPublicSections: [],
+  navBarPlaylistSections: [],
+  navBarAdministrationSections: [],
+  navBarActivationKey: '',
+};
+
+export default createStore({
+  state,
+  getters,
+  mutations,
+  actions,
   modules: {
     ServerInfo,
     UserInfo,
+    UserPlaylist,
     GlobalModal,
   },
 });

@@ -36,8 +36,7 @@ export default {
   },
   actions: {
     async fetchRemoteUserInfo({ commit }) {
-      const data = await api.fetchRemoteUserInfo();
-      const { user } = data.data;
+      const user = await api.fetchRemoteUserInfo();
       commit('setUserInfo', user);
       commit('setLoggedIn', true);
     },
@@ -48,9 +47,12 @@ export default {
       query.append('redirect', 'internal');
       const url = `${api.config.loginPageUrl()}?${query.toString()}`;
       const token = await $native('openLoginWindow', { url });
-      commit('setAccessToken', token);
-      commit('setLoggedIn', true);
-      commit('refreshSessionRenewTime');
+
+      await Promise.all([
+        commit('setAccessToken', token),
+        commit('setLoggedIn', true),
+        commit('refreshSessionRenewTime'),
+      ]);
     },
 
     async usernamePasswordLogin({ commit }, { username, password }) {
@@ -75,7 +77,7 @@ export default {
         return { message: 'session_refresh_success' };
       }
 
-      const token = await api.refreshToken(state.accessToken).then(({ data }) => data.token);
+      const token = await api.refreshToken(state.accessToken);
       commit('setAccessToken', token);
       commit('refreshSessionRenewTime');
       return { message: 'token_refresh_success' };

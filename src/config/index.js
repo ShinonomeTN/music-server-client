@@ -22,7 +22,7 @@ export function reloadNativeConfig() {
       .catch(() => {
         console.info('Did not detect native platform.');
       });
-  }, 1000)
+  }, 1000);
 }
 
 export default config;

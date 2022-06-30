@@ -17,6 +17,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 async function createWindow() {
+  // @ts-ignore
   const win = new BrowserWindow(windowConfiguration());
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -39,13 +40,13 @@ app.on('activate', () => {
 });
 
 app.on('ready', async () => {
-  // if (isDevelopment && !process.env.IS_TEST) {
-  //   try {
-  //     await installExtension(VUEJS3_DEVTOOLS);
-  //   } catch (e) {
-  //     console.error('Vue Devtools failed to install:', e.toString());
-  //   }
-  // }
+  if (isDevelopment && !process.env.IS_TEST) {
+    try {
+      await installExtension(VUEJS3_DEVTOOLS);
+    } catch (e) {
+      console.error('Vue Devtools failed to install:', e);
+    }
+  }
 
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     // eslint-disable-next-line no-param-reassign

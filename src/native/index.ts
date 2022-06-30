@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ipcMain } from 'electron';
+import { ipcMain, IpcMainInvokeEvent } from 'electron';
 
 import requestDelegate from '@/native/request-delegate';
 import windowDelegate from '@/native/window-delegate';
@@ -8,8 +8,10 @@ import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-function rpcExecutionWrapper(method) {
-  return async (event, param) => {
+export type NativeRpcMethod = (event: IpcMainInvokeEvent, ...args : unknown[]) => Promise<unknown>
+
+function rpcExecutionWrapper(method : NativeRpcMethod) {
+  return async (event : IpcMainInvokeEvent, param : unknown[]) => {
     try {
       const result = await method(event, param);
       return Promise.resolve(result);
@@ -27,6 +29,7 @@ export function configureRPCHandlers() {
   };
 
   for (const [key, value] of Object.entries(handlerList)) {
+    // @ts-ignore
     ipcMain.handle(key, rpcExecutionWrapper(value));
     console.log(`Register rpc method '${key}'.`);
   }

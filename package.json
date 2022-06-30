@@ -18,21 +18,28 @@
     "axios": "^0.27.2",
     "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.8.3",
+    "clean-webpack-plugin": "^4.0.0",
     "core-js": "^3.8.3",
+    "json-loader": "^0.5.7",
     "qs": "^6.10.3",
-    "vue": "^3.2.13",
+    "vue": "^3.2.36",
+    "vue-class-component": "^8.0.0-0",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-typescript": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "@vue/eslint-config-airbnb": "^6.0.0",
+    "@vue/eslint-config-typescript": "^9.1.0",
     "autoprefixer": "^10.4.7",
     "electron": "^13.0.0",
     "electron-devtools-installer": "^3.1.0",
@@ -42,20 +49,30 @@
     "eslint-plugin-vuejs-accessibility": "^1.1.0",
     "postcss-loader": "^7.0.0",
     "sass-loader": "^13.0.0",
+    "ts-loader": "~8.2.0",
+    "typescript": "~4.5.5",
     "vue-cli-plugin-electron-builder": "~2.1.1"
   },
   "eslintConfig": {
     "root": true,
+    "parser": "vue-eslint-parser",
     "env": {
       "node": true
     },
     "extends": [
       "plugin:vue/vue3-essential",
-      "@vue/airbnb"
+      "@vue/airbnb",
+      "@vue/typescript",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
     ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
+    "plugins": [
+      "vue",
+      "@typescript-eslint"
+    ],
+    "ignorePatterns": [
+      "/buildSrc/"
+    ],
     "rules": {
       "key-spacing": "warn",
       "quotes": "warn",
@@ -87,19 +104,24 @@
       "no-empty-function": "warn",
       "global-require": "off",
       "no-continue": "off",
-      "vuejs-accessibility/click-events-have-key-events" : "off",
-      "vuejs-accessibility/form-control-has-label" : "off",
+      "vuejs-accessibility/click-events-have-key-events": "off",
+      "vuejs-accessibility/form-control-has-label": "off",
       "no-lone-blocks": "off",
       "no-await-in-loop": "off",
       "no-param-reassign": "off",
-      "vue/no-unused-components" : "warn",
-      "template-curly-spacing" : "warn",
+      "vue/no-unused-components": "warn",
+      "template-curly-spacing": "warn",
       "no-useless-return": "warn",
       "no-useless-call": "warn",
       "no-loop-func": "off",
       "no-empty": "warn",
       "no-extra-boolean-cast": "off",
-      "no-return-await": "off"
+      "no-return-await": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-empty-function": "warn",
+      "lines-between-class-members": "off",
+      "function-paren-newline": "off",
+      "max-classes-per-file": "off"
     }
   },
   "browserslist": [

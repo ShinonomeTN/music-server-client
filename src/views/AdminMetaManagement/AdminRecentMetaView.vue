@@ -26,10 +26,10 @@ import api from '@/api';
 import MSNavSectionHeader from '@/components/MSNavSectionHeader.vue';
 import AlbumCard from '@/components/AlbumCard.vue';
 import ArtistCard from '@/components/ArtistCard.vue';
-import ButtonCard from "@/components/ButtonCard.vue";
+import ButtonCard from '@/components/ButtonCard.vue';
 
 export default {
-  name: "AdminRecentMetaView",
+  name: 'AdminRecentMetaView',
   components: {
     'ms-nav-section-header': MSNavSectionHeader,
     AlbumCard,
@@ -73,7 +73,7 @@ export default {
       }
     },
   },
-}
+};
 </script>
 
 <style scoped>

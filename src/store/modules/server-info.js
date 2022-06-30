@@ -27,19 +27,19 @@ export default {
   },
   actions: {
     async fetchServerInfo({ commit }, { serverAddress }) {
-      const serverInfo = await api.fetchRemoteServerInfo(serverAddress).then(({ data }) => data);
+      const serverInfo = await api.fetchRemoteServerInfo(serverAddress);
       commit('setServerInfo', serverInfo);
       commit('setServerAddress', serverAddress);
     },
     async updateServerInfo({ state, commit }) {
       if (appConfig.isWeb) {
-        const serverInfo = await api.fetchCurrentServerInfo().then(({ data }) => data);
+        const serverInfo = await api.fetchCurrentServerInfo();
         commit('setServerInfo', serverInfo);
         return;
       }
       const { serverUrl } = state;
       if (serverUrl === null) throw new BusinessError({ error: 'could_not_fetch_server_info', message: 'server_url_not_set' });
-      const serverInfo = await api.fetchRemoteServerInfo(serverUrl).then(({ data }) => data);
+      const serverInfo = await api.fetchRemoteServerInfo(serverUrl);
       commit('setServerInfo', serverInfo);
     },
   },
